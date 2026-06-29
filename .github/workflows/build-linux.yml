@@ -43,20 +43,55 @@ jobs:
           - SearXNG as default search
           - Third-party cookies blocked
           - HTTPS-only mode enabled
+          - DNS-over-HTTPS enabled
+          
+          Branding:
+          - UCX Shield Logo
           
           Based on Ungoogled Chromium 149.0.7827.200
           EOF
           
           # Copy preferences
           cp resources/default_preferences.json ucx-browser/master_preferences 2>/dev/null || true
+          cp resources/default_preferences.json ucx-browser/default_preferences.json 2>/dev/null || true
           
-          # Create launcher
-          cat > ucx-browser/ucx-browser << 'LAUNCHER'
+          # Copy UCX icons
+          cp resources/ucx_*.png ucx-browser/ 2>/dev/null || true
+          
+          # Create UCX Browser launcher
+          cat > ucx-browser/UCX-Browser << 'LAUNCHER'
           #!/bin/bash
           DIR="$(cd "$(dirname "$0")" && pwd)"
           "$DIR/chrome" --user-data-dir="$DIR/profile" "$@"
           LAUNCHER
-          chmod +x ucx-browser/ucx-browser
+          chmod +x ucx-browser/UCX-Browser
+          
+          # Create portable launcher
+          cat > ucx-browser/UCX-Browser-Portable << 'PORTABLE'
+          #!/bin/bash
+          DIR="$(cd "$(dirname "$0")" && pwd)"
+          "$DIR/chrome" --user-data-dir="$DIR/profile" --enable-features=IncognitoAvailableWebwide "$@"
+          PORTABLE
+          chmod +x ucx-browser/UCX-Browser-Portable
+          
+          # Create README
+          cat > ucx-browser/README.txt << 'README'
+          UCX Browser v2.0.1 - README
+          
+          Quick Start:
+          1. Run ./UCX-Browser to start
+          2. For portable mode, run ./UCX-Browser-Portable
+          
+          Privacy Features:
+          - Default search: SearXNG (searxng.website)
+          - All telemetry removed
+          - WebRTC protected
+          - HTTPS-only enforced
+          
+          Based on Ungoogled Chromium 149.0.7827.200
+          
+          Privacy First. No Compromise.
+          README
           
           echo "UCX identity created"
       
