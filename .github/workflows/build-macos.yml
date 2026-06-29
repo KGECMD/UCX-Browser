@@ -28,7 +28,7 @@ jobs:
           
           # Create UCX Info
           cat > UCX-Browser.app/Contents/UCX-INFO.txt << 'EOF'
-          UCX Browser v2.0.0
+          UCX Browser v2.0.1
           Privacy-First Chromium
           
           Privacy Features:
@@ -36,20 +36,53 @@ jobs:
           - WebRTC IP leak protection
           - SearXNG as default search
           - Third-party cookies blocked
+          - HTTPS-only mode enabled
+          - DNS-over-HTTPS enabled
+          
+          Branding:
+          - UCX Shield Logo
           
           Based on Ungoogled Chromium 149.0.7827.200
           EOF
           
           # Copy preferences
           cp resources/default_preferences.json UCX-Browser.app/Contents/MacOS/master_preferences 2>/dev/null || true
+          cp resources/default_preferences.json UCX-Browser.app/Contents/MacOS/default_preferences.json 2>/dev/null || true
           
-          # Create launcher script
-          cat > UCX-Browser.app/Contents/MacOS/ucx-browser << 'LAUNCHER'
+          # Create UCX Browser launcher
+          cat > UCX-Browser.app/Contents/MacOS/UCX-Browser << 'LAUNCHER'
           #!/bin/bash
           DIR="$(cd "$(dirname "$0")" && pwd)"
           "$DIR/chrome" --user-data-dir="$DIR/../profile" "$@"
           LAUNCHER
-          chmod +x UCX-Browser.app/Contents/MacOS/ucx-browser
+          chmod +x UCX-Browser.app/Contents/MacOS/UCX-Browser
+          
+          # Create portable launcher
+          cat > UCX-Browser.app/Contents/MacOS/UCX-Browser-Portable << 'PORTABLE'
+          #!/bin/bash
+          DIR="$(cd "$(dirname "$0")" && pwd)"
+          "$DIR/chrome" --user-data-dir="$DIR/../profile" --enable-features=IncognitoAvailableWebwide "$@"
+          PORTABLE
+          chmod +x UCX-Browser.app/Contents/MacOS/UCX-Browser-Portable
+          
+          # Create README
+          cat > UCX-Browser.app/Contents/MacOS/README.txt << 'README'
+          UCX Browser v2.0.1 - README
+          
+          Quick Start:
+          1. Run ./UCX-Browser to start
+          2. For portable mode, run ./UCX-Browser-Portable
+          
+          Privacy Features:
+          - Default search: SearXNG (searxng.website)
+          - All telemetry removed
+          - WebRTC protected
+          - HTTPS-only enforced
+          
+          Based on Ungoogled Chromium 149.0.7827.200
+          
+          Privacy First. No Compromise.
+          README
           
           # Copy DMG if exists
           [ -f "ucx.dmg" ] && hdiutil attach ucx.dmg -mountpoint /Volumes/UCX 2>/dev/null && \
@@ -60,10 +93,10 @@ jobs:
       - name: Package
         run: |
           mkdir -p dist
-          if [ -d "ucx.dmg" ] || [ -f "ucx.dmg" ]; then
-            hdiutil create -volname "UCX Browser" -srcfolder UCX-Browser.app -ov -format UDZO dist/UCX-Browser-v2.0.0-macOS.dmg
+          if [ -f "ucx.dmg" ]; then
+            hdiutil create -volname "UCX Browser" -srcfolder UCX-Browser.app -ov -format UDZO dist/UCX-Browser-v2.0.1-macOS.dmg
           else
-            tar -czf dist/UCX-Browser-v2.0.0-macOS.tar.gz UCX-Browser.app
+            tar -czf dist/UCX-Browser-v2.0.1-macOS.tar.gz UCX-Browser.app
           fi
           echo "Package created"
       
@@ -91,15 +124,23 @@ jobs:
         with:
           files: artifact/*
           body: |
-            # 🛡️ UCX Browser v2.0.0 - macOS
+            # 🛡️ UCX Browser v2.0.1 - macOS
             
             **Privacy-First Chromium Browser**
             
             ## 🔒 Privacy Features
-            - ✅ All telemetry removed
             - ✅ **SearXNG as default search**
+            - ✅ All telemetry removed
             - ✅ WebRTC IP leak protection
             - ✅ Third-party cookies blocked
+            - ✅ HTTPS-only mode enforced
+            - ✅ DNS-over-HTTPS enabled
+            
+            ## Included Files
+            - **UCX-Browser** - Main launcher
+            - **UCX-Browser-Portable** - Portable mode
+            - **README.txt** - Quick start guide
+            - **UCX-INFO.txt** - Privacy manifest
             
             ## Usage
             ```bash
