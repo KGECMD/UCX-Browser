@@ -4,10 +4,11 @@ UCX Project (Universally Created Xternal Privacy Project)
 
 Version: 1.1.0 - Enhanced Privacy Edition
 Date: 2024
-Based on: Ungoogled Chromium 146.0.7680.153
+Based on: Ungoogled Chromium 149.0.7827.200
 
 Privacy Flags: v2.0
 - Telemetry: REMOVED
 - WebRTC: PROTECTED
 - Cookies: BLOCKED
 - HTTPS: ENFORCED
+- Default Search: SearXNG (searxng.website)
