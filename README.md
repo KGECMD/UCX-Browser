@@ -39,24 +39,54 @@
 
 ## 📥 Installation
 
-### Windows
-1. Download the latest release from [Releases](https://github.com/KGECMD/ucx-browser/releases)
-2. Extract the ZIP file
-3. Run `UCX Browser.exe`
-4. ⚠️ **Note**: If SmartScreen warns, click "More info" → "Run anyway" (the executable is safe and open source)
+### Pre-built Binaries (Coming Soon)
 
-### Linux
-```bash
-# Download the .deb or .AppImage
-sudo dpkg -i ucx-browser*.deb
-# OR
-./UCX-Browser-*.AppImage
+**Builds in Progress!** Pre-built binaries will be available once CI/CD completes.
+
+### Build from Source
+
+**Windows:**
+```cmd
+git clone https://github.com/KGECMD/UCX-Browser.git
+cd UCX-Browser
+build-scripts\build-windows.bat
 ```
 
-### macOS
-1. Download the .dmg file
-2. Drag to Applications
-3. Allow in System Preferences if needed
+**Linux:**
+```bash
+git clone https://github.com/KGECMD/UCX-Browser.git
+cd UCX-Browser
+chmod +x build-scripts/build-linux.sh
+./build-scripts/build-linux.sh
+```
+
+**macOS (Intel):**
+```bash
+git clone https://github.com/KGECMD/UCX-Browser.git
+cd UCX-Browser
+chmod +x build-scripts/build-macos.sh
+./build-scripts/build-macos.sh x64
+```
+
+**macOS (Apple Silicon):**
+```bash
+git clone https://github.com/KGECMD/UCX-Browser.git
+cd UCX-Browser
+chmod +x build-scripts/build-macos.sh
+./build-scripts/build-macos.sh arm64
+```
+
+See [BUILD-GUIDE.md](build-scripts/BUILD-GUIDE.md) for detailed instructions.
+
+### GitHub Actions
+
+To trigger automated builds, push a tag:
+```bash
+git tag v1.0.2
+git push origin v1.0.2
+```
+
+Builds will appear in the [Actions](https://github.com/KGECMD/UCX-Browser/actions) tab.
 
 ## 🔧 Browser Flags
 
