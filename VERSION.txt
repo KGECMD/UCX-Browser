@@ -1,18 +1,58 @@
-UCX Browser v2.0.0
-Build by KGECMD (Kayan Erkama)
-UCX Project (Universally Created Xternal Privacy Project)
+===============================================
+    UCX Browser v2.0.0
+    Privacy-First Chromium
+    Copyright 2024 UCX Project
+===============================================
 
 Version: 2.0.0 - Privacy-First Edition
-Date: 2024
+Build: 2024-06
 Based on: Ungoogled Chromium 149.0.7827.200
 
-Privacy Flags: v2.0
-- Telemetry: REMOVED
-- WebRTC: PROTECTED  
-- Cookies: BLOCKED
-- HTTPS: ENFORCED
-- DNS-over-HTTPS: ENABLED
-- Default Search: SearXNG (searxng.website)
-- QUIC: DISABLED
-- Client Hints: DISABLED
-- Privacy Sandbox: DISABLED
+===============================================
+    PRIVACY FLAGS - MAXIMUM PROTECTION v2.0
+===============================================
+
+REMOVED/DISABLED:
+  - Google Telemetry: COMPLETELY REMOVED
+  - Chrome Sync: DISABLED
+  - Privacy Sandbox: DISABLED
+  - Translate Service: DISABLED
+  - Search Suggestions: DISABLED
+  - QUIC Protocol: DISABLED
+  - Client Hints: DISABLED
+  - VR Service: DISABLED
+
+ENABLED/PROTECTED:
+  - WebRTC IP Leak Protection: ENABLED
+  - Third-party Cookies: BLOCKED
+  - HTTPS-Only Mode: FORCED
+  - DNS-over-HTTPS: ENABLED
+  - Do Not Track: ENABLED
+  - Strict Referrer Policy: ENABLED
+
+DEFAULT SEARCH:
+  - Engine: SearXNG
+  - URL: https://searxng.website
+  - Type: Privacy-respecting metasearch
+
+===============================================
+    SECURITY HARDENING
+===============================================
+
+  - Site Isolation: MAXIMUM
+  - Origin Isolation: ENABLED
+  - Storage Partitioning: ENABLED
+  - Sandbox: MAXIMUM
+  - Memory Protection: ENABLED
+
+===============================================
+    BUILD INFORMATION
+===============================================
+
+Author: KGECMD (Kayan Erkama)
+Project: UCX - Universally Created Xternal Privacy
+Website: https://github.com/KGECMD/UCX-Browser
+
+===============================================
+
+Privacy First. No Compromise.

@@ -32,64 +32,69 @@ jobs:
       
       - name: Create UCX Identity
         run: |
-          # Rename browser folder
+          # Flatten extracted folder
           $browserDir = Get-ChildItem -Path "chromium" -Directory | Where-Object { $_.Name -like "*ungoogled*" } | Select-Object -First 1
           if ($browserDir) {
             Move-Item -Path "chromium\$($browserDir.Name)\*" -Destination "chromium\" -Force
             Remove-Item -Path "chromium\$($browserDir.Name)" -Recurse -Force
           }
-          Write-Host "Browser extracted to root"
+          Write-Host "Browser extracted"
       
       - name: Apply UCX Branding
         run: |
-          # Create UCX branding files
-          $productName = "UCX Browser"
           $version = "2.0.0"
           
-          # Update about product
+          # UCX Product Version
           @"
           UCX Browser $version
           Privacy-First Chromium
           Copyright 2024 UCX Project
           "@ | Out-File -FilePath "chromium\PRODUCT_VERSION" -Encoding ASCII -NoNewline
           
-          # Create UCX manifest
+          # UCX Info
           @"
-          # UCX Browser v$version
+          # UCX Browser v$version - Privacy-First Chromium
           
-          Privacy Features:
+          ## Privacy Features
           - Maximum telemetry removal
           - WebRTC IP leak protection
-          - SearXNG as default search
+          - SearXNG as default search (https://searxng.website)
           - Third-party cookies blocked
-          - HTTPS-only mode enabled
+          - HTTPS-only mode enforced
+          - DNS-over-HTTPS enabled
+          - Do Not Track enabled
+          
+          ## Branding
+          - UCX Shield Logo
+          - Custom launcher icons
           
           Based on Ungoogled Chromium 149.0.7827.200
           "@ | Out-File -FilePath "chromium\UCX-INFO.txt" -Encoding UTF8
           
           # Copy default preferences
           Copy-Item "resources\default_preferences.json" "chromium\default_preferences.json" -Force
-          Write-Host "UCX identity applied"
+          
+          # Copy UCX icons
+          Copy-Item "resources\ucx.ico" "chromium\" -Force
+          Copy-Item "resources\ucx_*.png" "chromium\" -Force
+          Write-Host "UCX branding applied"
       
-      - name: Create Launchers
+      - name: Create UCX Launchers
         run: |
           # UCX Browser Launcher
           @'
           @echo off
-          title UCX Browser
+          title UCX Browser - Privacy-First Chromium
           "%~dp0chrome.exe" --user-data-dir="%~dp0profile" %*
           '@ | Out-File -FilePath "chromium\UCX-Browser.exe" -Encoding ASCII -NoNewline
           
-          # UCX Portable Mode Launcher  
+          # UCX Portable Mode
           @'
           @echo off
           title UCX Browser - Portable Mode
           "%~dp0chrome.exe" --user-data-dir="%~dp0profile" --enable-features=IncognitoAvailableWebwide %*
           '@ | Out-File -FilePath "chromium\UCX-Browser-Portable.exe" -Encoding ASCII -NoNewline
           
-          # Make them executable
-          icacls "chromium\UCX-Browser.exe" /grant Everyone:RX 2>$null
-          icacls "chromium\UCX-Browser-Portable.exe" /grant Everyone:RX 2>$null
           Write-Host "Launchers created"
       
       - name: Create Installer
@@ -101,8 +106,8 @@ jobs:
           cls
           echo.
           echo  ================================================
-          echo   UCX Browser - Privacy-First Chromium
-          echo   Version 2.0.0
+          echo   UCX Browser v2.0.0
+          echo   Privacy-First Chromium
           echo  ================================================
           echo.
           echo  [1] Desktop
@@ -145,6 +150,26 @@ jobs:
           echo.
           pause
           '@ | Out-File -FilePath "chromium\Setup.bat" -Encoding ASCII -NoNewline
+          
+          # Create portable README
+          @"
+          # UCX Browser v2.0.0 - README
+          
+          ## Quick Start
+          1. Run UCX-Browser.exe to start
+          2. For portable mode, run UCX-Browser-Portable.exe
+          3. Use Setup.bat to install properly
+          
+          ## Privacy Features
+          - Default search: SearXNG (searxng.website)
+          - All telemetry removed
+          - WebRTC protected
+          - HTTPS-only enforced
+          
+          Based on Ungoogled Chromium 149.0.7827.200
+          
+          Privacy First. No Compromise.
+          "@ | Out-File -FilePath "chromium\README.txt" -Encoding UTF8
           Write-Host "Installer created"
       
       - name: Package
@@ -183,9 +208,9 @@ jobs:
             
             **Privacy-First Chromium Browser**
             
-            ## 🔒 Privacy Features
+            ## 🔒 Privacy Features (Maximum Protection)
+            - ✅ **SearXNG as default search** (searxng.website)
             - ✅ All telemetry removed
-            - ✅ **SearXNG as default search**
             - ✅ WebRTC IP leak protection
             - ✅ Third-party cookies blocked
             - ✅ HTTPS-only mode enforced
@@ -193,10 +218,19 @@ jobs:
             - ✅ Do Not Track enabled
             - ✅ Privacy sandbox disabled
             
-            ## 📦 Downloads
-            - **UCX-Browser.exe** - Direct launcher
+            ## 📦 Included Files
+            - **UCX-Browser.exe** - Main launcher with UCX branding
+            - **UCX-Browser-Portable.exe** - Portable mode
             - **Setup.bat** - Interactive installer
-            - **Portable Mode** - Run from USB, no install
+            - **README.txt** - Quick start guide
+            - **UCX-INFO.txt** - Privacy manifest
+            - **ucx.ico** - Custom UCX icon
+            - **default_preferences.json** - Privacy settings
+            
+            ## 🚀 Quick Start
+            1. Extract ZIP
+            2. Run UCX-Browser.exe
+            3. Enjoy private browsing!
             
             ## Based On
             Ungoogled Chromium 149.0.7827.200
