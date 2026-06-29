@@ -214,7 +214,7 @@ jobs:
             - Master Preferences with SearXNG
             
             ## 🔍 Based On
-            - Ungoogled Chromium 146.0.7680.153
+            - Ungoogled Chromium 149.0.7827.200
             
             ---
             *Privacy First. No Compromise.*
