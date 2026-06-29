@@ -34,25 +34,57 @@ jobs:
         run: |
           # Copy UCX icons
           Copy-Item resources/ucx*.ico chromium/ -Force
-          # Update version info placeholder
           Write-Host "UCX Browser branding applied"
       
-      - name: Package
+      - name: Package Portable ZIP
+        shell: pwsh
         run: |
           mkdir dist -Force
           Compress-Archive -Path chromium/* -DestinationPath dist/UCX-Browser-Windows-x64.zip -Force
+          Write-Host "ZIP package created: $(Get-Item dist/UCX-Browser-Windows-x64.zip).Length bytes"
+      
+      - name: Create Self-Extracting Installer
+        shell: pwsh
+        run: |
+          # Create a simple batch installer that self-extracts
+          $script = @'
+          @echo off
+          mode 80,25
+          title UCX Browser Installer
+          echo.
+          echo  ╔══════════════════════════════════════════════════╗
+          echo  ║         UCX Browser v1.0.4 Installer          ║
+          echo  ║         Privacy-First Chromium Browser          ║
+          echo  ╚══════════════════════════════════════════════════╝
+          echo.
+          set /p INSTALL_DIR="Install to directory (press Enter for current folder): "
+          if "%INSTALL_DIR%"=="" set INSTALL_DIR=%CD%
+          echo.
+          echo Extracting UCX Browser to: %INSTALL_DIR%
+          powershell -Command "Expand-Archive -Path '%~dp0UCX-Browser-Windows-x64.zip' -DestinationPath '%INSTALL_DIR%\UCX-Browser' -Force"
+          echo.
+          echo Installation complete!
+          echo.
+          set /p RUN="Would you like to launch UCX Browser now? (Y/N): "
+          if /i "%RUN%"=="Y" start "" "%INSTALL_DIR%\UCX-Browser\*\chrome.exe"
+          exit
+          '@
+          $script | Out-File -Encoding ASCII dist/install.bat -NoNewline
       
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: UCX-Browser-Windows-x64
-          path: dist/*.zip
+          path: dist/*
           retention-days: 30
 
   release:
     needs: build-windows
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
+    
+    permissions:
+      contents: write
     
     steps:
       - name: Download Artifact
@@ -61,10 +93,44 @@ jobs:
           name: UCX-Browser-Windows-x64
           path: artifact
           
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: artifact/*.zip
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release via API
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          BODY=$(cat <<'EOF'
+          # 🛡️ UCX Browser v1.0.4
+          
+          **The Ultimate Privacy-First Chromium Browser**
+          
+          ## 🔒 Privacy Features
+          - ✅ All telemetry removed
+          - ✅ Google services disabled  
+          - ✅ WebRTC IP leak protection
+          - ✅ Third-party cookies blocked
+          - ✅ DNS-over-HTTPS enabled
+          - ✅ HTTPS-only mode enforced
+          
+          ## 📦 Downloads
+          - **Portable ZIP**: Extract and run chrome.exe anywhere
+          - **Installer**: Double-click to install
+          
+          *Built on Ungoogled Chromium 146.0.7680.153*
+          EOF
+          )
+          
+          curl -s -X POST "https://api.github.com/repos/$GITHUB_REPOSITORY/releases" \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"tag_name\":\"$TAG\",\"name\":\"UCX Browser $TAG\",\"body\":\"$BODY\",\"draft\":false,\"prerelease\":false}"
+          
+      - name: Upload Release Assets
+        run: |
+          for file in artifact/*; do
+            ASSET_NAME=$(basename "$file")
+            echo "Uploading: $ASSET_NAME"
+            curl -s -X POST "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/assets" \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Content-Type: application/octet-stream" \
+              -H "Content-Length: $(stat -c%s "$file")" \
+              --data-binary "@$file" \
+              "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/assets?name=$ASSET_NAME" | jq -r '.browser_download_url // .message'
+          done
