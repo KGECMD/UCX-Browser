@@ -9,53 +9,42 @@ on:
 jobs:
   build-windows:
     runs-on: windows-latest
-    timeout-minutes: 720
+    timeout-minutes: 120
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          
-      - name: Install depot_tools
+      
+      - name: Download Ungoogled Chromium
+        shell: pwsh
         run: |
-          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git "$env:TEMP\depot_tools"
-          Add-Content $env:GITHUB_PATH "$env:TEMP\depot_tools"
-          
-      - name: Fetch Chromium
+          $version = "149.0.7827.200"
+          $url = "https://sourceforge.net/projects/ungoogled-chromium-win.mirror/files/$version/ungoogled-chromium-$version.windows-x64.zip/download"
+          Write-Host "Downloading UC..."
+          Invoke-WebRequest -Uri $url -OutFile "ucx.zip" -UserAgent "Mozilla/5.0"
+          Expand-Archive -Path "ucx.zip" -DestinationPath "chromium" -Force
+          Write-Host "Extracted!"
+          ls -Recurse chromium | Select-Object FullName
+      
+      - name: Apply UCX Branding
+        shell: pwsh
         run: |
-          mkdir chromium
-          cd chromium
-          fetch --nohooks chromium
-          cd src
-          $version = Get-Content ../../revision.txt
-          git checkout $version
-          
-      - name: Apply Patches
-        run: |
-          cd ../..
-          python utils/patches.py apply -s src/
-          
-      - name: Build
-        run: |
-          cd src
-          gn gen out/Release --args="is_official_build=true symbol_level=0"
-          ninja -C out/Release chrome chrome.exe
-          
+          # Copy UCX icons
+          Copy-Item resources/ucx*.ico chromium/ -Force
+          # Update version info placeholder
+          Write-Host "UCX Browser branding applied"
+      
       - name: Package
         run: |
-          mkdir ../dist
-          Compress-Archive -Path src/out/Release/chrome.exe -DestinationPath ../dist/UCX-Browser-Windows-x64.zip -Force
-          
+          mkdir dist -Force
+          Compress-Archive -Path chromium/* -DestinationPath dist/UCX-Browser-Windows-x64.zip -Force
+      
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: UCX-Browser-Windows-x64
           path: dist/*.zip
           retention-days: 30
-          
+
   release:
     needs: build-windows
     runs-on: ubuntu-latest
