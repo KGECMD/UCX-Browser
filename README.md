@@ -1,8 +1,10 @@
 # 🛡️ UCX Browser - Privacy-First Chromium
 
-![UCX Browser Logo](resources/ucx_icon_256.png)
+![UCX Browser Logo](resources/ucx_browser_logo.svg)
 
 **UCX Browser** is the ultimate privacy-focused, security-hardened Chromium browser. Built on Ungoogled Chromium, it provides maximum privacy protection with a premium browsing experience.
+
+> **Note**: Binaries coming soon. For now, build from source or use the GitHub Actions workflow.
 
 ## ✨ Features
 
