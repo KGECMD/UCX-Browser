@@ -93,44 +93,26 @@ jobs:
           name: UCX-Browser-Windows-x64
           path: artifact
           
-      - name: Create Release via API
-        run: |
-          TAG=${GITHUB_REF#refs/tags/}
-          BODY=$(cat <<'EOF'
-          # 🛡️ UCX Browser v1.0.4
-          
-          **The Ultimate Privacy-First Chromium Browser**
-          
-          ## 🔒 Privacy Features
-          - ✅ All telemetry removed
-          - ✅ Google services disabled  
-          - ✅ WebRTC IP leak protection
-          - ✅ Third-party cookies blocked
-          - ✅ DNS-over-HTTPS enabled
-          - ✅ HTTPS-only mode enforced
-          
-          ## 📦 Downloads
-          - **Portable ZIP**: Extract and run chrome.exe anywhere
-          - **Installer**: Double-click to install
-          
-          *Built on Ungoogled Chromium 146.0.7680.153*
-          EOF
-          )
-          
-          curl -s -X POST "https://api.github.com/repos/$GITHUB_REPOSITORY/releases" \
-            -H "Authorization: token $GITHUB_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d "{\"tag_name\":\"$TAG\",\"name\":\"UCX Browser $TAG\",\"body\":\"$BODY\",\"draft\":false,\"prerelease\":false}"
-          
-      - name: Upload Release Assets
-        run: |
-          for file in artifact/*; do
-            ASSET_NAME=$(basename "$file")
-            echo "Uploading: $ASSET_NAME"
-            curl -s -X POST "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/assets" \
-              -H "Authorization: token $GITHUB_TOKEN" \
-              -H "Content-Type: application/octet-stream" \
-              -H "Content-Length: $(stat -c%s "$file")" \
-              --data-binary "@$file" \
-              "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/assets?name=$ASSET_NAME" | jq -r '.browser_download_url // .message'
-          done
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifact/*
+          body: |
+            # 🛡️ UCX Browser v1.0.5
+            
+            **Privacy-First Chromium Browser**
+            
+            ## Privacy Features
+            - ✅ Telemetry removed
+            - ✅ Google services disabled
+            - ✅ WebRTC IP leak protection
+            - ✅ HTTPS-only mode
+            
+            ## Downloads
+            - **Portable ZIP**: Extract and run chrome.exe
+            - **Installer**: Run install.bat
+            
+            *Based on Ungoogled Chromium 146.0.7680.153*
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
