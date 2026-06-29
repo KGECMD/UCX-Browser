@@ -8,142 +8,68 @@ on:
 
 jobs:
   build-linux-x64:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 720
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
-      - name: Install Dependencies
+      
+      - name: Download Ungoogled Chromium Linux
         run: |
-          sudo apt-get update
-          sudo apt-get install -y python3 python3-pip python3-venv \
-            build-essential clang bison flex g++ \
-            libnss3-dev libatk1.0-dev libatk-bridge2.0-dev libcups2-dev \
-            libdrm2-dev libxkbcommon0-dev libxcomposite-dev \
-            libxdamage1-dev libxrandr2-dev libgbm1-dev \
-            libasound2-dev libpangocairo-1.0-0 libpango-1.0-0 \
-            libgtk-3-dev libgtk-3-0 libglib2.0-dev libdbus-1-dev \
-            libexpat1-dev libx11-xcb-util-dev libxcb-util-dev \
-            libxcursor-dev libxss-dev libsrtp0-dev libwebp-dev \
-            libudev-dev libegl1-mesa-dev libevent-dev \
-            libsnappy-dev liblzma-dev libopus-dev \
-            lld llvm binutils-dev pkg-config
-            
-      - name: Install depot_tools
+          VERSION="146.0.7680.153-1.1"
+          curl -L "https://github.com/ungoogled-software/ungoogled-chromium-linux-x64/releases/download/${VERSION}/ungoogled-chromium_${VERSION}_linux_x64.tar.xz" -o ucx.tar.xz --silent --show-error
+          tar -xf ucx.tar.xz && echo "Extracted successfully"
+      
+      - name: Apply Branding
         run: |
-          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git depot_tools
-          echo "$GITHUB_WORKSPACE/depot_tools" >> $GITHUB_PATH
-          
-      - name: Fetch Chromium
+          cp resources/ucx*.png ucx-chromium/ 2>/dev/null || true
+      
+      - name: Configure SearXNG
         run: |
-          mkdir -p chromium
-          cd chromium
-          fetch --nohooks chromium
-          cd src
-          git checkout $(cat ../../revision.txt)
-          
-      - name: Apply Patches
+          echo '{"default_search_provider":{"name":"SearXNG","search_url":"https://searxng.website/search?q={searchTerms}"},"default_search_provider_data":{"template_url_data":{"keyword":"searxng","name":"SearXNG","search_url":"https://searxng.website/search?q={searchTerms}"}}}' > ucx-chromium/master_preferences
+      
+      - name: Create Privacy Guide
         run: |
-          cd ../..
-          python3 utils/patches.py apply -s src/
-          
-      - name: Build
-        run: |
-          cd src
-          ./build/install-build-deps.sh || true
-          gclient runhooks
-          gn gen out/Release --args="is_official_build=true symbol_level=0 target_cpu=\"x64\""
-          ninja -C out/Release chrome
-          
+          echo "UCX Browser v1.1.0 - Privacy Guide" > ucx-chromium/PRIVACY-GUIDE.txt
+          echo "" >> ucx-chromium/PRIVACY-GUIDE.txt
+          echo "Privacy Features:" >> ucx-chromium/PRIVACY-GUIDE.txt
+          echo "- No telemetry or tracking" >> ucx-chromium/PRIVACY-GUIDE.txt
+          echo "- WebRTC IP protection" >> ucx-chromium/PRIVACY-GUIDE.txt
+          echo "- Default search: SearXNG" >> ucx-chromium/PRIVACY-GUIDE.txt
+          echo "" >> ucx-chromium/PRIVACY-GUIDE.txt
+          echo "Based on: Ungoogled Chromium 146.0.7680.153" >> ucx-chromium/PRIVACY-GUIDE.txt
+      
       - name: Package
         run: |
-          mkdir -p dist
-          tar -czf dist/UCX-Browser-Linux-x64.tar.gz -C src/out/Release chrome chrome_sandbox chrome-linux/
-          
-      - name: Upload Artifact
+          mkdir -p dist && tar -cJf dist/UCX-Browser-Linux-x64.tar.xz ucx-chromium/
+      
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: UCX-Browser-Linux-x64
-          path: dist/*.tar.gz
-          retention-days: 30
+          path: dist/*.tar.xz
 
-  build-linux-arm64:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 720
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3 python3-pip python3-venv \
-            build-essential clang bison flex g++ \
-            libnss3-dev libatk1.0-dev libatk-bridge2.0-dev libcups2-dev \
-            libdrm2-dev libxkbcommon0-dev libxcomposite-dev \
-            libxdamage1-dev libxrandr2-dev libgbm1-dev \
-            libasound2-dev libpangocairo-1.0-0 libpango-1.0-0 \
-            libgtk-3-dev libgtk-3-0 libglib2.0-dev libdbus-1-dev \
-            libexpat1-dev libx11-xcb-util-dev libxcb-util-dev \
-            libxcursor-dev libxss-dev libsrtp0-dev libwebp-dev \
-            libudev-dev libegl1-mesa-dev libevent-dev \
-            libsnappy-dev liblzma-dev libopus-dev \
-            lld llvm binutils-dev pkg-config qemu-user
-            
-      - name: Install depot_tools
-        run: |
-          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git depot_tools
-          echo "$GITHUB_WORKSPACE/depot_tools" >> $GITHUB_PATH
-          
-      - name: Fetch Chromium
-        run: |
-          mkdir -p chromium
-          cd chromium
-          fetch --nohooks chromium
-          cd src
-          git checkout $(cat ../../revision.txt)
-          
-      - name: Apply Patches
-        run: |
-          cd ../..
-          python3 utils/patches.py apply -s src/
-          
-      - name: Build
-        run: |
-          cd src
-          ./build/install-build-deps.sh || true
-          gclient runhooks
-          gn gen out/Release --args="is_official_build=true symbol_level=0 target_cpu=\"arm64\""
-          ninja -C out/Release chrome
-          
-      - name: Package
-        run: |
-          mkdir -p dist
-          tar -czf dist/UCX-Browser-Linux-ARM64.tar.gz -C src/out/Release chrome chrome_sandbox chrome-linux/
-          
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: UCX-Browser-Linux-ARM64
-          path: dist/*.tar.gz
-          retention-days: 30
-            
   release:
-    needs: [build-linux-x64, build-linux-arm64]
+    needs: build-linux-x64
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
-    
+    permissions:
+      contents: write
     steps:
-      - name: Download Artifacts
+      - name: Download
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          name: UCX-Browser-Linux-x64
+          path: artifact
           
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/**/*.tar.gz
-          generate_release_notes: true
+          files: artifact/*
+          body: "UCX Browser v1.1.0 - Privacy-First Chromium for Linux. Default search: SearXNG"
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -37,30 +37,78 @@ jobs:
         run: |
           # Copy UCX icons
           Copy-Item resources/ucx*.ico chromium/ -Force
+          Copy-Item resources/ucx_icon*.png chromium/ -Force
           Write-Host "UCX Browser branding applied"
+      
+      - name: Configure Search Engine - SearXNG
+        shell: pwsh
+        run: |
+          # Create master_preferences with SearXNG as default
+          $masterPrefs = @{
+            default_search_provider_data = @{
+              template_url_data = @{
+                keyword = "searxng"
+                name = "SearXNG"
+                search_url = "https://searxng.website/search?q={searchTerms}"
+                suggest_url = ""
+                image_url = ""
+                search_url_post_params = ""
+                suggestions_url_post_params = ""
+                instant_url_post_params = ""
+                icon = ""
+                startpage = 0
+                encoding = "UTF-8"
+                Affiliations = 0
+              }
+            }
+            default_search_provider = @{
+              enabled = $true
+              name = "SearXNG"
+              keyword = "searxng"
+              search_url = "https://searxng.website/search?q={searchTerms}"
+              suggest_url = ""
+              favicon_url = ""
+              icon_url = ""
+              id = 1
+              sync_off = $true
+            }
+          } | ConvertTo-Json -Depth 10
+          $masterPrefs | Out-File -Encoding UTF8 "chromium/master_preferences" -NoNewline
+          Write-Host "SearXNG configured as default search engine"
       
       - name: Create Privacy README
         shell: pwsh
         run: |
           $privacyReadme = @'
-          # UCX Browser Privacy Guide
+          # UCX Browser - Privacy Guide v1.1.0
           
-          ## Privacy Features
+          ## 🔒 Default Privacy Features
           - No telemetry or tracking
           - WebRTC IP leak protection enabled
           - Third-party cookies blocked
           - HTTPS-only mode enforced
           - DNS-over-HTTPS enabled
+          - Default search: SearXNG (privacy-respecting)
           
-          ## Settings to Verify
-          1. Open chrome://settings/privacy
-          2. Ensure "Do Not Track" is ON
-          3. Ensure "Send a Do Not Track request" is ON
-          4. Disable "Help improve Chrome's features and performance"
-          5. Disable "Make searches and browsing better"
+          ## 🛡️ Privacy Settings to Verify
+          1. Open: chrome://settings/privacy
+          2. Enable "Do Not Track"
+          3. Ensure "Help improve Chrome's features" is OFF
+          4. Verify third-party cookies are blocked
           
-          ## Support
+          ## 🔍 Default Search Engine
+          SearXNG: https://searxng.website
+          - Privacy-respecting metasearch engine
+          - No tracking, no logging
+          - Open source
+          
+          ## 📦 Based On
+          Ungoogled Chromium 146.0.7680.153
+          
+          ## 🌐 Support
           https://github.com/KGECMD/UCX-Browser
+          
+          *Privacy First. No Compromise.*
           '@
           $privacyReadme | Out-File -Encoding UTF8 "chromium/PRIVACY-GUIDE.txt" -NoNewline
           Write-Host "Privacy guide created"
@@ -70,9 +118,10 @@ jobs:
         run: |
           mkdir dist -Force
           Compress-Archive -Path chromium/* -DestinationPath dist/UCX-Browser-Windows-x64.zip -Force
-          Write-Host "ZIP package created: $(Get-Item dist/UCX-Browser-Windows-x64.zip).Length bytes"
+          $size = [math]::Round((Get-Item dist/UCX-Browser-Windows-x64.zip).Length / 1MB, 2)
+          Write-Host "ZIP package created: $size MB"
       
-      - name: Create Self-Extracting Installer
+      - name: Create Installer Script
         shell: pwsh
         run: |
           $script = @'
@@ -80,18 +129,22 @@ jobs:
           mode 80,25
           title UCX Browser v1.1.0 Installer
           echo.
-          echo  [UCX Browser Installer]
-          echo  Privacy-First Chromium
+          echo  ========================================
+          echo     UCX Browser v1.1.0 Installer
+          echo     Privacy-First Chromium Browser
+          echo  ========================================
           echo.
-          set /p INSTALL_DIR="Install to folder (Enter for current): "
-          if "%INSTALL_DIR%"=="" set INSTALL_DIR=%CD%
+          set /p DEST="Install to folder (Enter = current): "
+          if "%DEST%"=="" set DEST=%CD%
           echo.
-          echo Extracting to: %INSTALL_DIR%
-          powershell -Command "Expand-Archive -Path '%~dp0UCX-Browser-Windows-x64.zip' -DestinationPath '%INSTALL_DIR%\UCX-Browser' -Force"
+          echo Extracting to: %DEST%\UCX-Browser
+          powershell -Command "Expand-Archive -Path '%~dp0UCX-Browser-Windows-x64.zip' -DestinationPath '%DEST%\UCX-Browser' -Force"
           echo.
-          echo Done! Run UCX-Browser\chrome.exe
+          echo  Installation complete!
+          echo  Run: %DEST%\UCX-Browser\*\chrome.exe
+          echo.
           set /p RUN="Launch now? (Y/N): "
-          if /i "%RUN%"=="Y" start "" "%INSTALL_DIR%\UCX-Browser\*\chrome.exe"
+          if /i "%RUN%"=="Y" start "" "%DEST%\UCX-Browser\*\chrome.exe"
           exit
           '@
           $script | Out-File -Encoding ASCII dist/install.bat -NoNewline
@@ -138,6 +191,7 @@ jobs:
             - ✅ HTTPS-only mode enforced
             - ✅ Strict referrer policy
             - ✅ Privacy sandbox disabled
+            - ✅ **SearXNG as default search engine**
             
             ## 🛡️ Security
             - ✅ Site isolation
@@ -145,15 +199,22 @@ jobs:
             - ✅ Storage partitioning
             - ✅ Maximum sandboxing
             
+            ## 🔍 Default Search Engine
+            **SearXNG** - Privacy-respecting metasearch
+            - No tracking
+            - No logging
+            - Open source
+            
             ## 📦 Downloads
             - **Portable ZIP**: Extract anywhere, run chrome.exe
             - **Installer**: Run install.bat
             
-            ## 🔍 Based On
-            - Ungoogled Chromium 146.0.7680.153
-            
             ## 📄 Included
             - Privacy Guide (PRIVACY-GUIDE.txt)
+            - Master Preferences with SearXNG
+            
+            ## 🔍 Based On
+            - Ungoogled Chromium 146.0.7680.153
             
             ---
             *Privacy First. No Compromise.*
