@@ -1,11 +1,11 @@
-# 🛡️ UCX Browser v2.0.0 - Privacy-First Chromium
+# 🛡️ UCX Browser v2.0.1 - Privacy-First Chromium
 
 ![UCX Browser Logo](resources/ucx_logo.svg)
 
 **UCX Browser** is the ultimate privacy-focused, security-hardened Chromium browser. Built on Ungoogled Chromium, it provides maximum privacy protection with a premium browsing experience.
 
 [![Build Status](https://github.com/KGECMD/UCX-Browser/actions/workflows/build-windows.yml/badge.svg)](https://github.com/KGECMD/UCX-Browser/actions)
-[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/KGECMD/UCX-Browser/releases)
+[![Version](https://img.shields.io/badge/version-2.0.1-blue.svg)](https://github.com/KGECMD/UCX-Browser/releases)
 [![Privacy](https://img.shields.io/badge/privacy-maximum-green.svg)](PRIVACY.md)
 
 ## 🔒 Privacy Features - Maximum Protection v2.0
@@ -39,9 +39,9 @@
 
 | Platform | File | Status |
 |----------|------|--------|
-| Windows x64 | UCX-Browser-v2.0.0-Windows-x64.zip | ✅ Ready (183 MB) |
-| Linux x64 | UCX-Browser-v2.0.0-Linux-x64.tar.xz | ✅ Ready |
-| macOS | UCX-Browser-v2.0.0-macOS.dmg | ✅ Ready |
+| Windows x64 | UCX-Browser-v2.0.1-Windows-x64.zip | ✅ Ready (183 MB) |
+| Linux x64 | UCX-Browser-v2.0.1-Linux-x64.tar.xz | ✅ Ready |
+| macOS | UCX-Browser-v2.0.1-macOS.dmg | ✅ Ready |
 
 [![Latest Release](https://img.shields.io/github/v/release/KGECMD/UCX-Browser)](https://github.com/KGECMD/UCX-Browser/releases/latest)
 
@@ -50,13 +50,13 @@
 ## 🚀 Quick Start
 
 ### Windows
-1. Download `UCX-Browser-v2.0.0-Windows-x64.zip`
+1. Download `UCX-Browser-v2.0.1-Windows-x64.zip`
 2. Extract anywhere
 3. Run `UCX-Browser.exe`
 
 ### Linux
 ```bash
-tar -xf UCX-Browser-v2.0.0-Linux-x64.tar.xz
+tar -xf UCX-Browser-v2.0.1-Linux-x64.tar.xz
 ./ucx-browser/ucx-browser
 ```
 
@@ -93,8 +93,8 @@ tar -xf UCX-Browser-v2.0.0-Linux-x64.tar.xz
 
 ```bash
 # Push a tag to trigger builds
-git tag v2.0.0
-git push origin v2.0.0
+git tag v2.0.1
+git push origin v2.0.1
 ```
 
 ## 📜 License

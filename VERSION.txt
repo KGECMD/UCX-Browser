@@ -1,10 +1,10 @@
 ===============================================
-    UCX Browser v2.0.0
+    UCX Browser v2.0.1
     Privacy-First Chromium
     Copyright 2024 UCX Project
 ===============================================
 
-Version: 2.0.0 - Privacy-First Edition
+Version: 2.0.1 - Privacy-First Edition
 Build: 2024-06
 Based on: Ungoogled Chromium 149.0.7827.200
 

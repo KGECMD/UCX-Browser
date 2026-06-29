@@ -34,7 +34,7 @@ jobs:
           
           # UCX Info
           cat > ucx-browser/UCX-INFO.txt << 'EOF'
-          UCX Browser v2.0.0
+          UCX Browser v2.0.1
           Privacy-First Chromium
           
           Privacy Features:
@@ -63,8 +63,8 @@ jobs:
       - name: Package
         run: |
           mkdir -p dist
-          tar -cJf dist/UCX-Browser-v2.0.0-Linux-x64.tar.xz ucx-browser/
-          echo "Package: $(du -h dist/UCX-Browser-v2.0.0-Linux-x64.tar.xz | cut -f1)"
+          tar -cJf dist/UCX-Browser-v2.0.1-Linux-x64.tar.xz ucx-browser/
+          echo "Package: $(du -h dist/UCX-Browser-v2.0.1-Linux-x64.tar.xz | cut -f1)"
       
       - name: Upload
         uses: actions/upload-artifact@v4
@@ -90,7 +90,7 @@ jobs:
         with:
           files: artifact/*
           body: |
-            # 🛡️ UCX Browser v2.0.0 - Linux
+            # 🛡️ UCX Browser v2.0.1 - Linux
             
             **Privacy-First Chromium Browser**
             
