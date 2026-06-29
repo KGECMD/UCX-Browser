@@ -13,11 +13,12 @@ on:
 
 jobs:
   build-windows:
-    runs-on: windows-latest
+    runs-on: windows-2022
     strategy:
       matrix:
-        arch: [x64, x86]
-        windows-version: ['2019', '2022']
+        include:
+          - arch: x64
+            gn_arch: x64
     
     steps:
       - name: Checkout
@@ -42,29 +43,33 @@ jobs:
           cd chromium
           fetch --nohooks chromium
           cd src
-          git checkout ${{ github.event.inputs.version || github.ref_name }}
+          $version = Get-Content ../revision.txt
+          git checkout $version
           
       - name: Apply Patches
         run: |
           $env:PATH = "$env:TEMP\depot_tools;$env:PATH"
-          python ../ucx-browser/utils/patches.py apply -s src/
+          cd ..
+          python utils/patches.py apply -s src/
           
       - name: Build
+        env:
+          PATH: "$env:TEMP\depot_tools;$env:PATH"
         run: |
-          $env:PATH = "$env:TEMP\depot_tools;$env:PATH"
           cd src
           gn gen out/Release --args="is_official_build=true symbol_level=0"
           ninja -C out/Release chrome
           
       - name: Package
         run: |
-          7z a -tzip UCX-Browser-Win-${{ matrix.arch }}.zip ./src/out/Release/*
+          mkdir dist
+          Compress-Archive -Path src/out/Release/* -DestinationPath dist/UCX-Browser-Windows-x64.zip
           
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: UCX-Browser-Windows-${{ matrix.arch }}
-          path: UCX-Browser-Win-${{ matrix.arch }}.zip
+          name: UCX-Browser-Windows-x64
+          path: dist/*.zip
           
   release:
     needs: build-windows

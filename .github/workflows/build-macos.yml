@@ -14,14 +14,6 @@ on:
 jobs:
   build-macos-intel:
     runs-on: macos-13
-    strategy:
-      matrix:
-        include:
-          - arch: x64
-            sdk_platform: MacOSX
-            sdk_version: '13.3'
-            target: macosx
-            
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -42,14 +34,14 @@ jobs:
           cd chromium
           fetch --nohooks chromium
           cd src
-          git checkout ${{ github.event.inputs.version || github.ref_name }}
+          git checkout $(cat ../../revision.txt)
           
       - name: Apply Patches
         env:
           PATH: ${{ github.workspace }}/depot_tools:$PATH
         run: |
           cd ..
-          python3 ucx-browser/utils/patches.py apply -s src/
+          python3 ../utils/patches.py apply -s src/
           
       - name: Build
         env:
@@ -62,8 +54,7 @@ jobs:
       - name: Package DMG
         run: |
           mkdir -p dist
-          hdiutil create -volname "UCX Browser" -srcfolder src/out/Release UCX-Browser-macOS-x64.dmg
-          mv UCX-Browser-macOS-x64.dmg dist/
+          hdiutil create -volname "UCX Browser" -srcfolder src/out/Release -ov -format UDZO dist/UCX-Browser-macOS-x64.dmg
           
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -73,13 +64,6 @@ jobs:
           
   build-macos-arm64:
     runs-on: macos-14
-    strategy:
-      matrix:
-        include:
-          - arch: arm64
-            target: iphoneos
-            is_arm: true
-            
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -100,14 +84,14 @@ jobs:
           cd chromium
           fetch --nohooks chromium
           cd src
-          git checkout ${{ github.event.inputs.version || github.ref_name }}
+          git checkout $(cat ../../revision.txt)
           
       - name: Apply Patches
         env:
           PATH: ${{ github.workspace }}/depot_tools:$PATH
         run: |
           cd ..
-          python3 ucx-browser/utils/patches.py apply -s src/
+          python3 ../utils/patches.py apply -s src/
           
       - name: Build
         env:
@@ -120,8 +104,7 @@ jobs:
       - name: Package DMG
         run: |
           mkdir -p dist
-          hdiutil create -volname "UCX Browser" -srcfolder src/out/Release UCX-Browser-macOS-arm64.dmg
-          mv UCX-Browser-macOS-arm64.dmg dist/
+          hdiutil create -volname "UCX Browser" -srcfolder src/out/Release -ov -format UDZO dist/UCX-Browser-macOS-arm64.dmg
           
       - name: Upload Artifact
         uses: actions/upload-artifact@v4

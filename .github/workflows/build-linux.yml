@@ -21,8 +21,6 @@ jobs:
             gn_arch: x64
           - arch: arm64
             gn_arch: arm64
-          - arch: arm
-            gn_arch: arm
     
     steps:
       - name: Checkout
@@ -42,7 +40,6 @@ jobs:
             libxcursor-dev libxss-dev libsrtp0-dev libwebp-dev \
             libudev-dev libegl1-mesa-dev libevent-dev \
             libsnappy-dev liblzma-dev libopus-dev \
-            libsoup-3.0-dev libk他的人偶-dev \
             lld llvm binutils-dev pkg-config
             
       - name: Install depot_tools
@@ -58,61 +55,50 @@ jobs:
           cd chromium
           fetch --nohooks chromium
           cd src
-          git checkout ${{ github.event.inputs.version || github.ref_name }}
+          git checkout $(cat ../../revision.txt)
           
       - name: Apply Patches
         env:
           PATH: ${{ github.workspace }}/depot_tools:$PATH
         run: |
           cd ..
-          python3 ucx-browser/utils/patches.py apply -s src/
+          python3 ../utils/patches.py apply -s src/
           
       - name: Build
         env:
           PATH: ${{ github.workspace }}/depot_tools:$PATH
         run: |
           cd src
-          ./build/install-build-deps.sh
+          ./build/install-build-deps.sh || true
           gclient runhooks
           gn gen out/Release --args="is_official_build=true symbol_level=0 target_cpu=\"${{ matrix.gn_arch }}\""
           ninja -C out/Release chrome chrome_sandbox
           
-      - name: Package DEB
+      - name: Package
         run: |
           mkdir -p dist
-          python3 src/chrome/installer/linux/debian/build_deb.py --output-dir=dist
-          
-      - name: Package AppImage
-        run: |
-          mkdir -p dist
-          # Create AppDir structure
           mkdir -p UCX-Browser.AppDir/usr/bin
           mkdir -p UCX-Browser.AppDir/usr/share/applications
           mkdir -p UCX-Browser.AppDir/usr/share/icons/hicolor/256x256/apps
-          
-          # Copy files
           cp src/out/Release/chrome UCX-Browser.AppDir/usr/bin/ucx-browser
-          cp src/out/Release/chrome_sandbox UCX-Browser.AppDir/usr/bin/
-          cp resources/ucx_icon_256.png UCX-Browser.AppDir/usr/share/icons/hicolor/256x256/apps/ucx-browser.png
-          
-          # Create desktop file
+          cp src/out/Release/chrome_sandbox UCX-Browser.AppDir/usr/bin/ 2>/dev/null || true
+          cp resources/ucx_icon_256.png UCX-Browser.AppDir/usr/share/icons/hicolor/256x256/apps/ucx-browser.png || true
           cat > UCX-Browser.AppDir/ucx-browser.desktop << 'DESKTOP'
 [Desktop Entry]
 Name=UCX Browser
+Comment=Privacy-First Chromium Browser
 Exec=ucx-browser %U
 Icon=ucx-browser
 Type=Application
 DESKTOP
-          
-          tar -czf UCX-Browser-Linux-{{ matrix.arch }}.tar.gz UCX-Browser.AppDir
+          cp UCX-Browser.AppDir/ucx-browser.desktop UCX-Browser.AppDir/usr/share/applications/
+          tar -czf dist/UCX-Browser-Linux-${{ matrix.arch }}.tar.gz -C UCX-Browser.AppDir .
           
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: UCX-Browser-Linux-${{ matrix.arch }}
-          path: |
-            dist/*.deb
-            dist/*.tar.gz
+          path: dist/*.tar.gz
             
   release:
     needs: build-linux
@@ -128,7 +114,7 @@ DESKTOP
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: artifacts/**/*.deb artifacts/**/*.tar.gz
+          files: artifacts/**/*.tar.gz
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
