@@ -1,0 +1,41 @@
+{
+  "name": "PlanetVPN",
+  "description": "Free VPN service for privacy protection",
+  "extension_id": "bkibbcobbpdonhkgfmeangepfpdbjbhb",
+  "manifest_version": 2,
+  "default_settings": {
+    "auto_connect": false,
+    "kill_switch": true,
+    "protocol": "auto",
+    "selected_country": "auto",
+    "block_ipv6": true,
+    "block_webrtc": true,
+    "dns_leak_protection": true
+  },
+  "permissions": [
+    "privacy",
+    "proxy",
+    "storage",
+    "tabs",
+    "<all_urls>"
+  ],
+  "recommended_countries": [
+    "Switzerland",
+    "Netherlands", 
+    "Germany",
+    "Sweden",
+    "Canada"
+  ],
+  "features": {
+    "kill_switch": "Blocks internet if VPN disconnects",
+    "no logs": "No activity logging policy",
+    "fast servers": "High-speed server network",
+    "free tier": "Always-free servers available"
+  },
+  "installation_notes": [
+    "Install from Chrome Web Store or load as unpacked extension",
+    "Create a free account at planetvpn.com",
+    "Select preferred server location",
+    "Enable kill switch for maximum privacy"
+  ]
+}

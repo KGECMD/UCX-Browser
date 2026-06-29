@@ -1,10 +1,11 @@
-# Contributing
+# Contributing to UCX Browser
 
-This document contains our criteria and guidelines for contributing to ungoogled-chromium.
+**UCX Browser** - *Universally Created Xternal Privacy Project*
+Built by **KGECMD (Kayan Erkama)**
 
-If you have **small contributions that don't fit our criteria**, consider adding them to [ungoogled-software/contrib](https://github.com/ungoogled-software/contrib) or [our Wiki](https://github.com/ungoogled-software/ungoogled-chromium-wiki) instead.
+This document contains our criteria and guidelines for contributing to UCX Browser.
 
-If you are a developer of an **officially-supported platform**, be sure to check out the [Platform Repository Standards and Guidelines](repo_management.md).
+If you have **small contributions that don't fit our criteria**, consider adding them to the project's Wiki or opening a discussion.
 
 List of contents:
 

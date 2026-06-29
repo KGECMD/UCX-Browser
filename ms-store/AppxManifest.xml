@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+         xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
+         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+         xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+         IgnorableNamespaces="uap rescap">
+
+  <Identity Name="KGECMD.UCXBrowser" 
+            Publisher="CN=KGECMD" 
+            Version="1.0.0.0" 
+            ProcessorArchitecture="x64" />
+
+  <mp:PhoneIdentity PhoneProductId="8d3a6c5b-1234-5678-9abc-def012345678" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+
+  <Properties>
+    <DisplayName>UCX Browser</DisplayName>
+    <PublisherDisplayName>KGECMD</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+    <Description>Privacy-First, Security-Hardened Chromium Browser</Description>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.22621.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="en-us"/>
+  </Resources>
+
+  <Applications>
+    <Application Id="UCXBrowser" 
+                 Executable="UCX Browser.exe" 
+                 EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="UCX Browser"
+                          Description="Privacy-First, Security-Hardened Chromium Browser"
+                          BackgroundColor="#4F46E5"
+                          Square150x150Logo="Assets\Square150x150Logo.png"
+                          Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" 
+                         Square310x310Logo="Assets\Square310x310Logo.png"
+                         Square71x71Logo="Assets\Square71x71Logo.png"
+                         ShortName="UCX">
+          <uap:ShowNameOnTiles>
+            <uap:ShowOn Tile="square150x150Logo"/>
+            <uap:ShowOn Tile="wide310x150Logo"/>
+            <uap:ShowOn Tile="square310x310Logo"/>
+          </uap:ShowNameOnTiles>
+        </uap:DefaultTile>
+        <uap:SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="#4F46E5"/>
+      </uap:VisualElements>
+      
+      <Extensions>
+        <uap:Extension Category="windows.protocol">
+          <uap:Protocol Name="http">
+            <uap:Logo>Assets\Square44x44Logo.png</uap:Logo>
+          </uap:Protocol>
+        </uap:Extension>
+        <uap:Extension Category="windows.protocol">
+          <uap:Protocol Name="https">
+            <uap:Logo>Assets\Square44x44Logo.png</uap:Logo>
+          </uap:Protocol>
+        </uap:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+    <Capability Name="internetClient" />
+    <Capability Name="privateNetworkClientServer" />
+    <Capability Name="removableStorage" />
+    <Capability Name="webcam" />
+    <Capability Name="microphone" />
+    <Capability Name="location" />
+  </Capabilities>
+
+</Package>

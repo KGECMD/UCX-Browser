@@ -1,0 +1,149 @@
+name: Build macOS
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag'
+        required: true
+        default: '1.0.0'
+
+jobs:
+  build-macos-intel:
+    runs-on: macos-13
+    strategy:
+      matrix:
+        include:
+          - arch: x64
+            sdk_platform: MacOSX
+            sdk_version: '13.3'
+            target: macosx
+            
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Install Python
+        run: brew install python@3.11
+        
+      - name: Install depot_tools
+        run: |
+          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git depot_tools
+          echo "$GITHUB_WORKSPACE/depot_tools" >> $GITHUB_PATH
+          
+      - name: Fetch Chromium
+        env:
+          PATH: ${{ github.workspace }}/depot_tools:$PATH
+        run: |
+          mkdir -p chromium
+          cd chromium
+          fetch --nohooks chromium
+          cd src
+          git checkout ${{ github.event.inputs.version || github.ref_name }}
+          
+      - name: Apply Patches
+        env:
+          PATH: ${{ github.workspace }}/depot_tools:$PATH
+        run: |
+          cd ..
+          python3 ucx-browser/utils/patches.py apply -s src/
+          
+      - name: Build
+        env:
+          PATH: ${{ github.workspace }}/depot_tools:$PATH
+        run: |
+          cd src
+          gn gen out/Release --args="is_official_build=true symbol_level=0"
+          ninja -C out/Release chrome
+          
+      - name: Package DMG
+        run: |
+          mkdir -p dist
+          hdiutil create -volname "UCX Browser" -srcfolder src/out/Release UCX-Browser-macOS-x64.dmg
+          mv UCX-Browser-macOS-x64.dmg dist/
+          
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: UCX-Browser-macOS-intel
+          path: dist/*.dmg
+          
+  build-macos-arm64:
+    runs-on: macos-14
+    strategy:
+      matrix:
+        include:
+          - arch: arm64
+            target: iphoneos
+            is_arm: true
+            
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Install Python
+        run: brew install python@3.11
+        
+      - name: Install depot_tools
+        run: |
+          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git depot_tools
+          echo "$GITHUB_WORKSPACE/depot_tools" >> $GITHUB_PATH
+          
+      - name: Fetch Chromium
+        env:
+          PATH: ${{ github.workspace }}/depot_tools:$PATH
+        run: |
+          mkdir -p chromium
+          cd chromium
+          fetch --nohooks chromium
+          cd src
+          git checkout ${{ github.event.inputs.version || github.ref_name }}
+          
+      - name: Apply Patches
+        env:
+          PATH: ${{ github.workspace }}/depot_tools:$PATH
+        run: |
+          cd ..
+          python3 ucx-browser/utils/patches.py apply -s src/
+          
+      - name: Build
+        env:
+          PATH: ${{ github.workspace }}/depot_tools:$PATH
+        run: |
+          cd src
+          gn gen out/Release --args="is_official_build=true symbol_level=0 target_cpu=\"arm64\""
+          ninja -C out/Release chrome
+          
+      - name: Package DMG
+        run: |
+          mkdir -p dist
+          hdiutil create -volname "UCX Browser" -srcfolder src/out/Release UCX-Browser-macOS-arm64.dmg
+          mv UCX-Browser-macOS-arm64.dmg dist/
+          
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: UCX-Browser-macOS-arm64
+          path: dist/*.dmg
+          
+  release:
+    needs: [build-macos-intel, build-macos-arm64]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: artifacts/**/*.dmg
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

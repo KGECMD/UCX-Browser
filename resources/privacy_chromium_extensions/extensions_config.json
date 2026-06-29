@@ -146,6 +146,50 @@
       "settings": {
         "block_external": true
       }
+    },
+    {
+      "id": "bkibbcobbpdonhkgfmeangepfpdbjbhb",
+      "name": "PlanetVPN",
+      "description": "Free VPN service for privacy protection with no-logs policy.",
+      "manifest_version": 2,
+      "category": "vpn",
+      "privacy_respecting": true,
+      "permissions": [
+        "privacy",
+        "proxy",
+        "storage",
+        "tabs",
+        "<all_urls>"
+      ],
+      "install_on_first_run": false,
+      "recommended": true,
+      "settings": {
+        "auto_connect": false,
+        "kill_switch": true,
+        "protocol": "auto",
+        "block_ipv6": true,
+        "block_webrtc": true,
+        "dns_leak_protection": true
+      }
+    },
+    {
+      "id": "ikalpcbhlahokgdlkpidlfooaefkefe",
+      "name": "ClearURLs",
+      "description": "Remove tracking parameters from URLs automatically.",
+      "manifest_version": 3,
+      "category": "privacy",
+      "privacy_respecting": true,
+      "permissions": [
+        "storage",
+        "tabs",
+        "webRequest"
+      ],
+      "install_on_first_run": false,
+      "recommended": true,
+      "settings": {
+        "displayBadge": false,
+        "collectUsageStats": false
+      }
     }
   ],
   "extension_stores": [

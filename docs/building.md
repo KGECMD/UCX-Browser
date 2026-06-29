@@ -1,10 +1,32 @@
-# Building ungoogled-chromium
+# Building UCX Browser
 
-The recommended way to build ungoogled-chromium is by consulting [the repository for your supported platform (links here)](platforms.md).
+**UCX Browser** is built on Ungoogled Chromium with enhanced privacy and security features.
 
-* *Linux users*: If your distribution is not listed, you will need to use Portable Linux.
+## Supported Platforms
 
-If you want to add ungoogled-chromium to your existing Chromium build process, see the next section. Additionally, you may reference the repositories for supported platforms for inspiration.
+- **Windows**: 7, 10, 11 (x64)
+- **Linux**: Ubuntu 20.04+, Debian, Fedora, Arch (x64, ARM64)
+- **macOS**: 10.15+ (Intel & Apple Silicon)
+
+## Prerequisites
+
+### Windows
+- Visual Studio 2022 with C++ workload
+- Windows 10 SDK (10.0.19041.0+)
+- Python 3.8+
+- 100GB+ free disk space
+- 8GB+ RAM
+
+### Linux
+- Python 3.8+
+- GCC/Clang with C++17
+- Build dependencies (see below)
+- 100GB+ free disk space
+
+### macOS
+- Xcode 14+
+- Python 3.8+
+- 100GB+ free disk space
 
 ## Integrating ungoogled-chromium into your Chromium build process
 

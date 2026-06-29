@@ -1,8 +1,10 @@
-# Privacy-Chromium Premium Edition - Extensions Guide
+# UCX Browser - Extensions Guide
+
+**Built by KGECMD (Kayan Erkama)**
 
 ## Overview
 
-Privacy-Chromium Premium Edition supports a comprehensive set of extensions while maintaining the highest standards of privacy and security.
+**UCX Browser** supports a comprehensive set of extensions while maintaining the highest standards of privacy and security. Chrome Web Store is supported by default.
 
 ## Supported Extension Formats
 
