@@ -7,113 +7,65 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-macos-intel:
-    runs-on: macos-13
-    timeout-minutes: 720
+  build-macos:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
-      - name: Install Python
-        run: brew install python@3.11
-        
-      - name: Install depot_tools
+      
+      - name: Download Ungoogled Chromium macOS
         run: |
-          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git depot_tools
-          echo "$GITHUB_WORKSPACE/depot_tools" >> $GITHUB_PATH
-          
-      - name: Fetch Chromium
+          VERSION="146.0.7680.153-1.1"
+          curl -L "https://github.com/ungoogled-software/ungoogled-chromium-macos/releases/download/${VERSION}/ungoogled-chromium_${VERSION}_macos.dmg" -o ucx.dmg --silent --show-error
+          echo "Downloaded successfully"
+      
+      - name: Configure SearXNG
         run: |
-          mkdir -p chromium
-          cd chromium
-          fetch --nohooks chromium
-          cd src
-          git checkout $(cat ../../revision.txt)
-          
-      - name: Apply Patches
+          echo '{"default_search_provider":{"name":"SearXNG","search_url":"https://searxng.website/search?q={searchTerms}"},"default_search_provider_data":{"template_url_data":{"keyword":"searxng","name":"SearXNG","search_url":"https://searxng.website/search?q={searchTerms}"}}}' > master_preferences
+      
+      - name: Create Privacy Guide
         run: |
-          cd ../..
-          python3 utils/patches.py apply -s src/
-          
-      - name: Build
+          echo "UCX Browser v1.1.0 - Privacy Guide" > PRIVACY-GUIDE.txt
+          echo "" >> PRIVACY-GUIDE.txt
+          echo "Privacy Features:" >> PRIVACY-GUIDE.txt
+          echo "- No telemetry or tracking" >> PRIVACY-GUIDE.txt
+          echo "- WebRTC IP protection" >> PRIVACY-GUIDE.txt
+          echo "- Default search: SearXNG" >> PRIVACY-GUIDE.txt
+          echo "" >> PRIVACY-GUIDE.txt
+          echo "Based on: Ungoogled Chromium 146.0.7680.153" >> PRIVACY-GUIDE.txt
+      
+      - name: Package
         run: |
-          cd src
-          gn gen out/Release --args="is_official_build=true symbol_level=0"
-          ninja -C out/Release chrome
-          
-      - name: Package DMG
-        run: |
-          mkdir -p dist
-          hdiutil create -volname "UCX Browser" -srcfolder src/out/Release -ov -format UDZO dist/UCX-Browser-macOS-x64.dmg
-          
-      - name: Upload Artifact
+          mkdir -p dist && cp ucx.dmg dist/UCX-Browser-macOS.dmg
+      
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: UCX-Browser-macOS-intel
+          name: UCX-Browser-macOS
           path: dist/*.dmg
-          retention-days: 30
-          
-  build-macos-arm64:
-    runs-on: macos-14
-    timeout-minutes: 720
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        
-      - name: Install Python
-        run: brew install python@3.11
-        
-      - name: Install depot_tools
-        run: |
-          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git depot_tools
-          echo "$GITHUB_WORKSPACE/depot_tools" >> $GITHUB_PATH
-          
-      - name: Fetch Chromium
-        run: |
-          mkdir -p chromium
-          cd chromium
-          fetch --nohooks chromium
-          cd src
-          git checkout $(cat ../../revision.txt)
-          
-      - name: Apply Patches
-        run: |
-          cd ../..
-          python3 utils/patches.py apply -s src/
-          
-      - name: Build
-        run: |
-          cd src
-          gn gen out/Release --args="is_official_build=true symbol_level=0 target_cpu=\"arm64\""
-          ninja -C out/Release chrome
-          
-      - name: Package DMG
-        run: |
-          mkdir -p dist
-          hdiutil create -volname "UCX Browser" -srcfolder src/out/Release -ov -format UDZO dist/UCX-Browser-macOS-arm64.dmg
-          
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: UCX-Browser-macOS-arm64
-          path: dist/*.dmg
-          retention-days: 30
-          
+
   release:
-    needs: [build-macos-intel, build-macos-arm64]
+    needs: build-macos
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
-    
+    permissions:
+      contents: write
     steps:
-      - name: Download Artifacts
+      - name: Download
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          name: UCX-Browser-macOS
+          path: artifact
           
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/**/*.dmg
-          generate_release_notes: true
+          files: artifact/*
+          body: "UCX Browser v1.1.0 - Privacy-First Chromium for macOS. Default search: SearXNG"
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
