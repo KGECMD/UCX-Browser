@@ -5,23 +5,11 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version tag'
-        required: true
-        default: '1.0.0'
 
 jobs:
-  build-linux:
+  build-linux-x64:
     runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        include:
-          - arch: x64
-            gn_arch: x64
-          - arch: arm64
-            gn_arch: arm64
-    
+    timeout-minutes: 720
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,8 +36,6 @@ jobs:
           echo "$GITHUB_WORKSPACE/depot_tools" >> $GITHUB_PATH
           
       - name: Fetch Chromium
-        env:
-          PATH: ${{ github.workspace }}/depot_tools:$PATH
         run: |
           mkdir -p chromium
           cd chromium
@@ -58,55 +44,98 @@ jobs:
           git checkout $(cat ../../revision.txt)
           
       - name: Apply Patches
-        env:
-          PATH: ${{ github.workspace }}/depot_tools:$PATH
         run: |
-          cd ..
-          python3 ../utils/patches.py apply -s src/
+          cd ../..
+          python3 utils/patches.py apply -s src/
           
       - name: Build
-        env:
-          PATH: ${{ github.workspace }}/depot_tools:$PATH
         run: |
           cd src
           ./build/install-build-deps.sh || true
           gclient runhooks
-          gn gen out/Release --args="is_official_build=true symbol_level=0 target_cpu=\"${{ matrix.gn_arch }}\""
-          ninja -C out/Release chrome chrome_sandbox
+          gn gen out/Release --args="is_official_build=true symbol_level=0 target_cpu=\"x64\""
+          ninja -C out/Release chrome
           
       - name: Package
         run: |
           mkdir -p dist
-          mkdir -p UCX-Browser.AppDir/usr/bin
-          mkdir -p UCX-Browser.AppDir/usr/share/applications
-          mkdir -p UCX-Browser.AppDir/usr/share/icons/hicolor/256x256/apps
-          cp src/out/Release/chrome UCX-Browser.AppDir/usr/bin/ucx-browser
-          cp src/out/Release/chrome_sandbox UCX-Browser.AppDir/usr/bin/ 2>/dev/null || true
-          cp resources/ucx_icon_256.png UCX-Browser.AppDir/usr/share/icons/hicolor/256x256/apps/ucx-browser.png || true
-          cat > UCX-Browser.AppDir/ucx-browser.desktop << 'DESKTOP'
-[Desktop Entry]
-Name=UCX Browser
-Comment=Privacy-First Chromium Browser
-Exec=ucx-browser %U
-Icon=ucx-browser
-Type=Application
-DESKTOP
-          cp UCX-Browser.AppDir/ucx-browser.desktop UCX-Browser.AppDir/usr/share/applications/
-          tar -czf dist/UCX-Browser-Linux-${{ matrix.arch }}.tar.gz -C UCX-Browser.AppDir .
+          tar -czf dist/UCX-Browser-Linux-x64.tar.gz -C src/out/Release chrome chrome_sandbox chrome-linux/
           
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: UCX-Browser-Linux-${{ matrix.arch }}
+          name: UCX-Browser-Linux-x64
           path: dist/*.tar.gz
+          retention-days: 30
+
+  build-linux-arm64:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 720
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-pip python3-venv \
+            build-essential clang bison flex g++ \
+            libnss3-dev libatk1.0-dev libatk-bridge2.0-dev libcups2-dev \
+            libdrm2-dev libxkbcommon0-dev libxcomposite-dev \
+            libxdamage1-dev libxrandr2-dev libgbm1-dev \
+            libasound2-dev libpangocairo-1.0-0 libpango-1.0-0 \
+            libgtk-3-dev libgtk-3-0 libglib2.0-dev libdbus-1-dev \
+            libexpat1-dev libx11-xcb-util-dev libxcb-util-dev \
+            libxcursor-dev libxss-dev libsrtp0-dev libwebp-dev \
+            libudev-dev libegl1-mesa-dev libevent-dev \
+            libsnappy-dev liblzma-dev libopus-dev \
+            lld llvm binutils-dev pkg-config qemu-user
+            
+      - name: Install depot_tools
+        run: |
+          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git depot_tools
+          echo "$GITHUB_WORKSPACE/depot_tools" >> $GITHUB_PATH
+          
+      - name: Fetch Chromium
+        run: |
+          mkdir -p chromium
+          cd chromium
+          fetch --nohooks chromium
+          cd src
+          git checkout $(cat ../../revision.txt)
+          
+      - name: Apply Patches
+        run: |
+          cd ../..
+          python3 utils/patches.py apply -s src/
+          
+      - name: Build
+        run: |
+          cd src
+          ./build/install-build-deps.sh || true
+          gclient runhooks
+          gn gen out/Release --args="is_official_build=true symbol_level=0 target_cpu=\"arm64\""
+          ninja -C out/Release chrome
+          
+      - name: Package
+        run: |
+          mkdir -p dist
+          tar -czf dist/UCX-Browser-Linux-ARM64.tar.gz -C src/out/Release chrome chrome_sandbox chrome-linux/
+          
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: UCX-Browser-Linux-ARM64
+          path: dist/*.tar.gz
+          retention-days: 30
             
   release:
-    needs: build-linux
+    needs: [build-linux-x64, build-linux-arm64]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     
     steps:
-      - name: Download all artifacts
+      - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
