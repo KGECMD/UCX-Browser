@@ -1,0 +1,146 @@
+{
+  "profile": {
+    "default_content_settings": {
+      "cookies": 1,
+      "images": 1,
+      "javascript": 1,
+      "plugins": 1,
+      "popups": "block",
+      "geolocation": 2,
+      "notifications": 2,
+      "media_stream_camera": 2,
+      "media_stream_mic": 2,
+      "media_stream": 2,
+      "automatic_downloads": 2,
+      "midi_sysex": 2,
+      "usb": 2,
+      "serial": 2,
+      "bluetooth_慧scatter": 2,
+      "file_system_access": 2,
+      "clipboard": 2,
+      "payment_handler": 2,
+      "background_sync": 2,
+      "storage_access": 2,
+      "durable_storage": 2
+    },
+    "default_content_setting_values": {
+      "cookies": 1,
+      "javascript": 1,
+      "media": 1,
+      "images": 1,
+      "popups": "block",
+      "notifications": 2,
+      "autoplay": 2
+    },
+    "content_settings_exceptions": {},
+    "default_search_provider_data": {
+      "template_url_data": {
+        "keyword": "searxng",
+        "name": "SearXNG",
+        "search_url": "https://searxng.website/search?q={searchTerms}",
+        "suggestions_url": "",
+        "instant_url": "",
+        "image_url": "",
+        "search_url_post_params": "",
+        "suggestions_url_post_params": "",
+        "instant_url_post_params": "",
+        "icon": "",
+        "startpage": 0,
+        "encoding": "UTF-8",
+        "affiliations": 0
+      }
+    }
+  },
+  "browser": {
+    "enable_snooper_visibility": false,
+    "enable_referrers": false,
+    "enable_hyperlink_auditing": false,
+    "show_home_button": true
+  },
+  "privacy": {
+    "do_not_track": true,
+    "enable_metrics": false,
+    "enable_network_prediction": false,
+    "enable_referrers": false,
+    "safe_browsing": {
+      "enabled": false,
+      "enhanced": false
+    },
+    "tracking_protection_level": 2,
+    "third_party_cookies_enabled": false
+  },
+  "extensions": {
+    "settings": {}
+  },
+  "sync": {
+    "enabled": false
+  },
+  "account_id": {
+    "consented": false
+  },
+  "signin": {
+    "allowed": false
+  },
+  "safebrowsing": {
+    "enabled": false,
+    "enhanced": false
+  },
+  "default_search_provider": {
+    "enabled": true,
+    "name": "SearXNG",
+    "prepopulate_id": 0,
+    "keyword": "searxng",
+    "search_url": "https://searxng.website/search?q={searchTerms}",
+    "suggestions_url": "",
+    "image_url": "",
+    "favicon_url": "",
+    "search_url_post_params": "",
+    "suggestions_url_post_params": "",
+    "image_url_post_params": "",
+    "instant_url": "",
+    "instant_url_post_params": "",
+    "encoding": "UTF-8",
+    "id": 1,
+    "sync_off": true
+  },
+  "default_search_provider_encodings": ["UTF-8", "UTF-16", "GB2312", "GBK"],
+  "default_search_provider_icon": "",
+  "default_search_provider_startup_pages": [],
+  "network_prediction_options": 2,
+  "referrer_url_noise_behavior": 2,
+  "hyperlink_auditing_enabled": false,
+  "https_only_mode": "enabled",
+  "http_handler_policy": 3,
+  "webkit_preferences": {
+    "webprefs": {
+      "loads_images_automatically": true,
+      "loads_icons_automatically": false,
+      "plugin_fullscreen": "block",
+      "uses_page_cache": false
+    }
+  },
+  "profile": {
+    "password_manager_enabled": false,
+    "offer_to_save_passwords": false,
+    "auto_signin_enabled": false
+  },
+  "download": {
+    "prompt_for_download": true,
+    "default_directory": "",
+    "directory_upgrade": true
+  },
+  "history": {
+    "ad_settings": {
+      "show_history": true,
+      "show_downloads": true
+    }
+  },
+  "tab_mini_tutorial": {
+    "shown": true
+  },
+  "ntp": {
+    "custom_background_dict": {
+      "exists": false
+    }
+  }
+}

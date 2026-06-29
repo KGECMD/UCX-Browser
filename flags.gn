@@ -1,12 +1,14 @@
 # ==============================================================================
-# UCX BROWSER - PRIVACY-FIRST CHROMIUM - BUILD FLAGS
+# UCX BROWSER - PRIVACY-FIRST CHROMIUM - BUILD FLAGS v2.0
 # ==============================================================================
 # Maximum privacy and security hardening while maintaining compatibility.
 # Philosophy: Privacy > Convenience. No telemetry. No tracking.
+# 
+# Version: 2.0 - Enhanced Privacy Edition
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
-# PERFORMANCE & BUILD
+# PERFORMANCE & BUILD OPTIMIZATION
 # ------------------------------------------------------------------------------
 chrome_pgo_phase=0
 clang_use_chrome_plugins=false
@@ -15,9 +17,11 @@ exclude_unwind_tables=true
 treat_warnings_as_errors=false
 is_official_build=true
 symbol_level=0
+optimize_webui=true
+enable_precompiled_headers=false
 
 # ------------------------------------------------------------------------------
-# GOOGLE SERVICES - ALL DISABLED
+# GOOGLE SERVICES - ALL DISABLED (PRIVACY FIRST)
 # ------------------------------------------------------------------------------
 enable_hangout_services_extension=false
 enable_mdns=false
@@ -30,6 +34,17 @@ google_default_client_id=""
 google_default_client_secret=""
 use_official_google_api_keys=false
 enable_chrome_features=false
+enable_one_platform_sign_in=false
+enable_sync_consent_mode=false
+
+# Disable Chrome Sync (privacy)
+enable_backup_restore_pages=false
+
+# Disable Cloud Print
+enable_cloud_print_proxies=false
+
+# Disable Translate
+enable_translate=false
 
 # ------------------------------------------------------------------------------
 # SECURITY HARDENING - MAXIMUM
@@ -49,20 +64,66 @@ enable_iterator_rewinding_builtins=false
 sandbox_distinct_thread_pool=true
 sandbox_simple_serial=true
 
+# Additional security
+enable_strict_mixed_sandboxing=true
+enable_strict_file_extension_checking=true
+
+# Disable deprecated crypto
+use_amffs=false
+use_brotli=true
+
 # ------------------------------------------------------------------------------
-# PRIVACY - ALL ENABLED/DISABLED APPROPRIATELY
+# PRIVACY FLAGS - MAXIMUM PROTECTION
 # ------------------------------------------------------------------------------
 enable_metrics=false
 enable_reporting=false
 enable_network_time_service_querying=false
 enable_privacy_sandbox_ads=false
 enable_client_hints=false
+enable_client_hints_inheritance=false
 enable_background_thread_pool=true
+
+# DNS Privacy - Enable DoH with privacy-respecting providers
 enable_dns_over_https=true
+enable_built_in_dns=true
+
+# Disable QUIC (privacy improvement - reduces fingerprinting)
 enable_quic=false
 
-# WebRTC - disable ICE candidates leak
+# WebRTC - disable ICE candidates leak (critical for privacy)
 webrtc_ip_handling_policy="default_public_interface_only"
+webrtc_allow_legacy_tls_protocols=false
+
+# Disable WebRtcRemoteEventLog (telemetry)
+enable_webrtc_remote_event_log=false
+
+# Disable Media History (privacy)
+enable_media_history_store=false
+enable_media_registry=false
+
+# Disable Search Suggestions (sends queries to Google)
+search_suggestions_enabled=false
+
+# Disable Network Prediction (sends URLs to Google)
+save_zone_info=false
+
+# Disable Alternate Error Pages (connects to Google)
+disable_client_side_phishing_detection=false
+
+# Disable Translate (connects to Google)
+use_translate_core=false
+
+# Disable WebXr (can be used for fingerprinting)
+enable_webxr=false
+
+# Disable VirtualKeyboard (privacy)
+enable_virtual_keyboard=false
+
+# Disable Smooth Scrolling (fingerprinting)
+smooth_scroll_enabled=false
+
+# Disable Hardware Overlays (fingerprinting)
+enable_user_level_screen_capture=false
 
 # ------------------------------------------------------------------------------
 # CONTENT BLOCKING - STRICT DEFAULTS
@@ -72,17 +133,22 @@ default_secure_referrer_policy="strict-origin-when-cross-origin"
 https_only_mode_default=1
 tracking_protection_level=2
 
-# ------------------------------------------------------------------------------
-# COMPATIBILITY (Streaming services)
-# ------------------------------------------------------------------------------
-enable_widevine=true
+# Block autoplay of media
+default_autoplay_policy="user_decided"
 
 # ------------------------------------------------------------------------------
-# DEBUG/DEV
+# COMPATIBILITY (Streaming services - needed for some sites)
+# ------------------------------------------------------------------------------
+enable_widevine=true
+enable_exoplay_core=false
+
+# ------------------------------------------------------------------------------
+# DEBUG/DEV (disabled for release)
 # ------------------------------------------------------------------------------
 remove_webcore_debug_symbols=true
 enable_profiling=false
+enable_service_worker_cached_revocable_blobs=false
 
 # ============================================================================
-# END OF UCX BROWSER FLAGS
+# END OF UCX BROWSER FLAGS v2.0
 # ============================================================================

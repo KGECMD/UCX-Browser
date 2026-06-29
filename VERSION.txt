@@ -1,7 +1,13 @@
-UCX Browser v1.0.4
+UCX Browser v1.1.0
 Build by KGECMD (Kayan Erkama)
 UCX Project (Universally Created Xternal Privacy Project)
 
-Version: 1.0.4
+Version: 1.1.0 - Enhanced Privacy Edition
 Date: 2024
 Based on: Ungoogled Chromium 146.0.7680.153
+
+Privacy Flags: v2.0
+- Telemetry: REMOVED
+- WebRTC: PROTECTED
+- Cookies: BLOCKED
+- HTTPS: ENFORCED

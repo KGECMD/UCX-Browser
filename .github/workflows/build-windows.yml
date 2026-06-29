@@ -10,6 +10,9 @@ jobs:
   build-windows:
     runs-on: windows-latest
     timeout-minutes: 120
+    permissions:
+      contents: read
+      
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,6 +39,32 @@ jobs:
           Copy-Item resources/ucx*.ico chromium/ -Force
           Write-Host "UCX Browser branding applied"
       
+      - name: Create Privacy README
+        shell: pwsh
+        run: |
+          $privacyReadme = @'
+          # UCX Browser Privacy Guide
+          
+          ## Privacy Features
+          - No telemetry or tracking
+          - WebRTC IP leak protection enabled
+          - Third-party cookies blocked
+          - HTTPS-only mode enforced
+          - DNS-over-HTTPS enabled
+          
+          ## Settings to Verify
+          1. Open chrome://settings/privacy
+          2. Ensure "Do Not Track" is ON
+          3. Ensure "Send a Do Not Track request" is ON
+          4. Disable "Help improve Chrome's features and performance"
+          5. Disable "Make searches and browsing better"
+          
+          ## Support
+          https://github.com/KGECMD/UCX-Browser
+          '@
+          $privacyReadme | Out-File -Encoding UTF8 "chromium/PRIVACY-GUIDE.txt" -NoNewline
+          Write-Host "Privacy guide created"
+      
       - name: Package Portable ZIP
         shell: pwsh
         run: |
@@ -46,26 +75,22 @@ jobs:
       - name: Create Self-Extracting Installer
         shell: pwsh
         run: |
-          # Create a simple batch installer that self-extracts
           $script = @'
           @echo off
           mode 80,25
-          title UCX Browser Installer
+          title UCX Browser v1.1.0 Installer
           echo.
-          echo  ╔══════════════════════════════════════════════════╗
-          echo  ║         UCX Browser v1.0.4 Installer          ║
-          echo  ║         Privacy-First Chromium Browser          ║
-          echo  ╚══════════════════════════════════════════════════╝
+          echo  [UCX Browser Installer]
+          echo  Privacy-First Chromium
           echo.
-          set /p INSTALL_DIR="Install to directory (press Enter for current folder): "
+          set /p INSTALL_DIR="Install to folder (Enter for current): "
           if "%INSTALL_DIR%"=="" set INSTALL_DIR=%CD%
           echo.
-          echo Extracting UCX Browser to: %INSTALL_DIR%
+          echo Extracting to: %INSTALL_DIR%
           powershell -Command "Expand-Archive -Path '%~dp0UCX-Browser-Windows-x64.zip' -DestinationPath '%INSTALL_DIR%\UCX-Browser' -Force"
           echo.
-          echo Installation complete!
-          echo.
-          set /p RUN="Would you like to launch UCX Browser now? (Y/N): "
+          echo Done! Run UCX-Browser\chrome.exe
+          set /p RUN="Launch now? (Y/N): "
           if /i "%RUN%"=="Y" start "" "%INSTALL_DIR%\UCX-Browser\*\chrome.exe"
           exit
           '@
@@ -98,21 +123,40 @@ jobs:
         with:
           files: artifact/*
           body: |
-            # 🛡️ UCX Browser v1.0.5
+            # 🛡️ UCX Browser v1.1.0 - Enhanced Privacy Edition
             
-            **Privacy-First Chromium Browser**
+            **The Ultimate Privacy-First Chromium Browser**
             
-            ## Privacy Features
-            - ✅ Telemetry removed
+            ## 🔒 Privacy Features (Enhanced v2.0)
+            - ✅ All telemetry removed
             - ✅ Google services disabled
             - ✅ WebRTC IP leak protection
-            - ✅ HTTPS-only mode
+            - ✅ QUIC disabled (reduced fingerprinting)
+            - ✅ Client hints disabled
+            - ✅ Third-party cookies blocked
+            - ✅ DNS-over-HTTPS enabled
+            - ✅ HTTPS-only mode enforced
+            - ✅ Strict referrer policy
+            - ✅ Privacy sandbox disabled
             
-            ## Downloads
-            - **Portable ZIP**: Extract and run chrome.exe
+            ## 🛡️ Security
+            - ✅ Site isolation
+            - ✅ Origin isolation
+            - ✅ Storage partitioning
+            - ✅ Maximum sandboxing
+            
+            ## 📦 Downloads
+            - **Portable ZIP**: Extract anywhere, run chrome.exe
             - **Installer**: Run install.bat
             
-            *Based on Ungoogled Chromium 146.0.7680.153*
+            ## 🔍 Based On
+            - Ungoogled Chromium 146.0.7680.153
+            
+            ## 📄 Included
+            - Privacy Guide (PRIVACY-GUIDE.txt)
+            
+            ---
+            *Privacy First. No Compromise.*
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

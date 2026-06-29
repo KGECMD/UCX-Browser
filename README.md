@@ -6,47 +6,48 @@
 
 [![Build Status](https://github.com/KGECMD/UCX-Browser/actions/workflows/build-windows.yml/badge.svg)](https://github.com/KGECMD/UCX-Browser/actions)
 
-## 🔒 Privacy Features - Maximum Protection
+## 🔒 Privacy Features - Maximum Protection v2.0
 
-| Feature | Status | Description |
-|---------|--------|-------------|
-| Telemetry | ❌ | Completely removed |
-| Google Services | ❌ | All blocked/disabled |
-| WebRTC Leak | ✅ | IP protection enabled |
-| Trackers | ✅ | Level 2 blocking |
-| 3rd Party Cookies | ✅ | Blocked by default |
-| DNS-over-HTTPS | ✅ | Enabled |
-| HTTPS-Only | ✅ | Forced |
-| Referrer Policy | ✅ | Strict mode |
-| QUIC | ❌ | Disabled |
-| Client Hints | ❌ | Disabled |
-| Privacy Sandbox | ❌ | Disabled |
+| Feature | Status | Why |
+|---------|--------|-----|
+| Google Telemetry | ❌ Disabled | No data sent to Google |
+| Chrome Sync | ❌ Disabled | No cloud sync |
+| WebRTC IP Leak | ✅ Protected | No IP exposure |
+| Client Hints | ❌ Disabled | Anti-fingerprinting |
+| 3rd Party Cookies | ❌ Blocked | No cross-site tracking |
+| QUIC Protocol | ❌ Disabled | Reduced fingerprinting |
+| DNS-over-HTTPS | ✅ Enabled | Encrypted DNS |
+| HTTPS-Only Mode | ✅ Forced | Secure connections |
+| Referrer Policy | ✅ Strict | Maximum privacy |
+| Privacy Sandbox | ❌ Disabled | No Google tracking |
+| Search Suggestions | ❌ Disabled | No Google queries |
+| Translate | ❌ Disabled | No Google connection |
 
 ## 🛡️ Security Hardening
 
 | Feature | Status |
 |---------|--------|
-| Sandboxing | ✅ Maximum |
-| Site Isolation | ✅ Enabled |
+| Site Isolation | ✅ Maximum |
 | Origin Isolation | ✅ Enabled |
 | Storage Partitioning | ✅ Enabled |
 | Memory Protection | ✅ Enabled |
+| Sandbox | ✅ Maximum |
 
 ## 📥 Downloads
 
-Download from [Releases](https://github.com/KGECMD/UCX-Browser/releases)
+[![Latest Release](https://img.shields.io/github/v/release/KGECMD/UCX-Browser)](https://github.com/KGECMD/UCX-Browser/releases/latest)
 
-## 🔧 Build from Source
+**Download:** https://github.com/KGECMD/UCX-Browser/releases
 
-```bash
-git clone https://github.com/KGECMD/UCX-Browser.git
-cd UCX-Browser
-# Run build script for your platform
-```
+## 🔍 Based On
 
-## 📋 Version
+- **Ungoogled Chromium 146.0.7680.153**
+- **Privacy Flags v2.0**
 
-Based on: **Ungoogled Chromium 146.0.7680.153**
+## 📄 Documentation
+
+- [PRIVACY.md](PRIVACY.md) - Complete Privacy Manifest
+- [VERSION.txt](VERSION.txt) - Version Information
 
 ---
 
