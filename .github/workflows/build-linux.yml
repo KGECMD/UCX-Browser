@@ -34,7 +34,7 @@ jobs:
           
           # UCX Info
           cat > ucx-browser/UCX-INFO.txt << 'EOF'
-          UCX Browser v2.0.1
+          UCX Browser v3.0.0
           Privacy-First Chromium
           
           Privacy Features:
@@ -76,7 +76,7 @@ jobs:
           
           # Create README
           cat > ucx-browser/README.txt << 'README'
-          UCX Browser v2.0.1 - README
+          UCX Browser v3.0.0 - README
           
           Quick Start:
           1. Run ./UCX-Browser to start
@@ -98,8 +98,8 @@ jobs:
       - name: Package
         run: |
           mkdir -p dist
-          tar -cJf dist/UCX-Browser-v2.0.1-Linux-x64.tar.xz ucx-browser/
-          echo "Package: $(du -h dist/UCX-Browser-v2.0.1-Linux-x64.tar.xz | cut -f1)"
+          tar -cJf dist/UCX-Browser-v3.0.0-Linux-x64.tar.xz ucx-browser/
+          echo "Package: $(du -h dist/UCX-Browser-v3.0.0-Linux-x64.tar.xz | cut -f1)"
       
       - name: Upload
         uses: actions/upload-artifact@v4
@@ -125,7 +125,7 @@ jobs:
         with:
           files: artifact/*
           body: |
-            # 🛡️ UCX Browser v2.0.1 - Linux
+            # 🛡️ UCX Browser v3.0.0 - Linux
             
             **Privacy-First Chromium Browser**
             

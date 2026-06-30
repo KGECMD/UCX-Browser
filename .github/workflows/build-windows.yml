@@ -9,7 +9,7 @@ on:
       version:
         description: 'Version'
         required: true
-        default: '2.0.1'
+        default: '3.0.0'
 
 jobs:
   build-ucx:
@@ -32,7 +32,6 @@ jobs:
       
       - name: Create UCX Identity
         run: |
-          # Flatten extracted folder
           $browserDir = Get-ChildItem -Path "chromium" -Directory | Where-Object { $_.Name -like "*ungoogled*" } | Select-Object -First 1
           if ($browserDir) {
             Move-Item -Path "chromium\$($browserDir.Name)\*" -Destination "chromium\" -Force
@@ -42,18 +41,22 @@ jobs:
       
       - name: Apply UCX Branding
         run: |
-          $version = "2.0.1"
+          $version = "3.0.0"
           
           # UCX Product Version
           @"
           UCX Browser $version
           Privacy-First Chromium
-          Copyright 2024 UCX Project
+          Copyright 2024-2026 UCX Project
           "@ | Out-File -FilePath "chromium\PRODUCT_VERSION" -Encoding ASCII -NoNewline
           
           # UCX Info
           @"
-          # UCX Browser v$version - Privacy-First Chromium
+          ================================================
+              UCX Browser v$version
+              Privacy-First Chromium
+              Copyright 2024-2026 UCX Project
+          ================================================
           
           ## Privacy Features
           - Maximum telemetry removal
@@ -63,120 +66,264 @@ jobs:
           - HTTPS-only mode enforced
           - DNS-over-HTTPS enabled
           - Do Not Track enabled
+          - QUIC disabled (anti-fingerprinting)
+          - Client hints disabled
+          
+          ## Security
+          - Site isolation: Maximum
+          - Origin isolation: Enabled
+          - Storage partitioning: Enabled
+          - Sandbox: Maximum
           
           ## Branding
-          - UCX Shield Logo
-          - Custom launcher icons
-          
-          Based on Ungoogled Chromium 149.0.7827.200
-          "@ | Out-File -FilePath "chromium\UCX-INFO.txt" -Encoding UTF8
-          
-          # Copy default preferences
-          Copy-Item "resources\default_preferences.json" "chromium\default_preferences.json" -Force
-          
-          # Copy UCX icons
-          Copy-Item "resources\ucx.ico" "chromium\" -Force
-          Copy-Item "resources\ucx_*.png" "chromium\" -Force
-          Write-Host "UCX branding applied"
-      
-      - name: Create UCX Launchers
-        run: |
-          # UCX Browser Launcher
-          @'
-          @echo off
-          title UCX Browser - Privacy-First Chromium
-          "%~dp0chrome.exe" --user-data-dir="%~dp0profile" %*
-          '@ | Out-File -FilePath "chromium\UCX-Browser.exe" -Encoding ASCII -NoNewline
-          
-          # UCX Portable Mode
-          @'
-          @echo off
-          title UCX Browser - Portable Mode
-          "%~dp0chrome.exe" --user-data-dir="%~dp0profile" --enable-features=IncognitoAvailableWebwide %*
-          '@ | Out-File -FilePath "chromium\UCX-Browser-Portable.exe" -Encoding ASCII -NoNewline
-          
-          Write-Host "Launchers created"
-      
-      - name: Create Installer
-        run: |
-          @'
-          @echo off
-          mode 80,25
-          color 1F
-          cls
-          echo.
-          echo  ================================================
-          echo   UCX Browser v2.0.1
-          echo   Privacy-First Chromium
-          echo  ================================================
-          echo.
-          echo  [1] Desktop
-          echo  [2] Start Menu  
-          echo  [3] Current Folder
-          echo  [Q] Quit
-          echo.
-          set /p CHOICE="Select install location: "
-          
-          if "%CHOICE%"=="1" goto desktop
-          if "%CHOICE%"=="2" goto startmenu
-          if "%CHOICE%"=="3" goto current
-          if /i "%CHOICE%"=="Q" exit
-          goto end
-          
-          :desktop
-          powershell -Command "Expand-Archive -Path '%~dp0UCX-Browser-Windows-x64.zip' -DestinationPath '%USERPROFILE%\Desktop\UCX-Browser' -Force"
-          echo.
-          echo  Installed to Desktop!
-          set /p RUN="Launch now? (Y/N): "
-          if /i "%RUN%"=="Y" start "" "%USERPROFILE%\Desktop\UCX-Browser\UCX-Browser.exe"
-          goto end
-          
-          :startmenu
-          powershell -Command "Expand-Archive -Path '%~dp0UCX-Browser-Windows-x64.zip' -DestinationPath '%APPDATA%\Microsoft\Windows\Start Menu\Programs\UCX-Browser' -Force"
-          echo.
-          echo  Installed to Start Menu!
-          set /p RUN="Launch now? (Y/N): "
-          if /i "%RUN%"=="Y" start "" "%APPDATA%\Microsoft\Windows\Start Menu\Programs\UCX-Browser\UCX-Browser.exe"
-          goto end
-          
-          :current
-          powershell -Command "Expand-Archive -Path '%~dp0UCX-Browser-Windows-x64.zip' -DestinationPath '%CD%\UCX-Browser' -Force"
-          echo.
-          echo  Installed!
-          set /p RUN="Launch now? (Y/N): "
-          if /i "%RUN%"=="Y" start "" "%CD%\UCX-Browser\UCX-Browser.exe"
-          
-          :end
-          echo.
-          pause
-          '@ | Out-File -FilePath "chromium\Setup.bat" -Encoding ASCII -NoNewline
-          
-          # Create portable README
-          @"
-          # UCX Browser v2.0.1 - README
-          
-          ## Quick Start
-          1. Run UCX-Browser.exe to start
-          2. For portable mode, run UCX-Browser-Portable.exe
-          3. Use Setup.bat to install properly
-          
-          ## Privacy Features
-          - Default search: SearXNG (searxng.website)
-          - All telemetry removed
-          - WebRTC protected
-          - HTTPS-only enforced
+          - UCX Shield Logo (ucx_logo.svg)
+          - UCX Icons (ucx.ico, ucx_*.png)
+          - Custom launchers (UCX-Browser.exe)
           
           Based on Ungoogled Chromium 149.0.7827.200
           
           Privacy First. No Compromise.
+          "@ | Out-File -FilePath "chromium\UCX-INFO.txt" -Encoding UTF8
+          
+          # Copy default preferences and branding
+          Copy-Item "resources\default_preferences.json" "chromium\default_preferences.json" -Force
+          Copy-Item "resources\ucx.ico" "chromium\" -Force
+          Copy-Item "resources\ucx_*.png" "chromium\" -Force
+          Copy-Item "resources\ucx_logo.svg" "chromium\" -Force
+          Write-Host "UCX branding applied"
+      
+      - name: Create UCX Launchers
+        run: |
+          # Create VBScript launcher with proper icon
+          $vbsScript = @'
+          Option Explicit
+          Dim oWS, oFS, sCurPath, sExePath, sArgs, iReturn
+          Set oWS = CreateObject("WScript.Shell")
+          Set oFS = CreateObject("Scripting.FileSystemObject")
+          sCurPath = oFS.GetParentFolderName(WScript.ScriptFullName)
+          sExePath = oFS.BuildPath(sCurPath, "chrome.exe")
+          sArgs = " --user-data-dir=" & Chr(34) & sCurPath & "\profile" & Chr(34) & " "
+          If WScript.Arguments.Count > 0 Then
+            Dim i
+            For i = 0 To WScript.Arguments.Count - 1
+              sArgs = sArgs & " " & Chr(34) & WScript.Arguments(i) & Chr(34)
+            Next
+          End If
+          iReturn = oWS.Run(Chr(34) & sExePath & Chr(34) & sArgs, 1, False)
+          '@
+          $vbsScript | Out-File -FilePath "chromium\UCX-Browser.vbs" -Encoding ASCII -NoNewline
+          
+          # Create batch launcher
+          @'
+          @echo off
+          title UCX Browser - Privacy-First Chromium
+          cd /d "%~dp0"
+          cscript //B UCX-Browser.vbs
+          '@ | Out-File -FilePath "chromium\UCX-Browser.exe" -Encoding ASCII -NoNewline
+          
+          # Create portable mode
+          $portableVbs = @'
+          Option Explicit
+          Dim oWS, oFS, sCurPath, sExePath, sArgs, iReturn
+          Set oWS = CreateObject("WScript.Shell")
+          Set oFS = CreateObject("Scripting.FileSystemObject")
+          sCurPath = oFS.GetParentFolderName(WScript.ScriptFullName)
+          sExePath = oFS.BuildPath(sCurPath, "chrome.exe")
+          sArgs = " --user-data-dir=" & Chr(34) & sCurPath & "\profile" & Chr(34) & " --enable-features=IncognitoAvailableWebwide"
+          If WScript.Arguments.Count > 0 Then
+            Dim i
+            For i = 0 To WScript.Arguments.Count - 1
+              sArgs = sArgs & " " & Chr(34) & WScript.Arguments(i) & Chr(34)
+            Next
+          End If
+          iReturn = oWS.Run(Chr(34) & sExePath & Chr(34) & sArgs, 1, False)
+          '@
+          $portableVbs | Out-File -FilePath "chromium\UCX-Browser-Portable.vbs" -Encoding ASCII -NoNewline
+          
+          @'
+          @echo off
+          title UCX Browser - Portable Mode
+          cd /d "%~dp0"
+          cscript //B UCX-Browser-Portable.vbs
+          '@ | Out-File -FilePath "chromium\UCX-Browser-Portable.exe" -Encoding ASCII -NoNewline
+          
+          Write-Host "Launchers created"
+      
+      - name: Create Enhanced Installer
+        run: |
+          @'
+          @echo off
+          mode 100,30
+          color 1F
+          cls
+          echo.
+          echo  ==================================================================
+          echo.
+          echo    _   _  _____  _____  _____  _____ 
+          echo    ^ ^  ^ ^  __ ^ ^  __^/  __^ ^  __^ 
+          echo   ^ ^  ^ ^ ^  ^ ^ ^  ^ ^ /  ^  ^ ^  ^ 
+          echo  ^_____^^_^__^ ^_^__^^__^/__^__^ ^_^__^ 
+          echo.
+          echo  ==================================================================
+          echo.
+          echo    UCX Browser v3.0.0
+          echo    Privacy-First Chromium
+          echo    Copyright 2024-2026 UCX Project
+          echo.
+          echo  ==================================================================
+          echo.
+          echo  Select Installation Option:
+          echo.
+          echo    [1] Desktop     - Create shortcut on Desktop
+          echo    [2] Start Menu   - Add to Start Menu
+          echo    [3] Current      - Install in current folder
+          echo    [P] Portable     - Create portable version
+          echo    [R] Run Now     - Run without installing
+          echo    [Q] Quit        - Exit installer
+          echo.
+          echo  ==================================================================
+          set /p CHOICE="    Enter choice (1/2/3/P/R/Q): "
+          
+          if /i "%CHOICE%"=="1" goto desktop
+          if /i "%CHOICE%"=="2" goto startmenu
+          if /i "%CHOICE%"=="3" goto current
+          if /i "%CHOICE%"=="P" goto portable
+          if /i "%CHOICE%"=="R" goto runnow
+          if /i "%CHOICE%"=="Q" goto quit
+          cls
+          goto menu
+          
+          :desktop
+          echo.
+          echo    [INFO] Creating Desktop shortcut...
+          powershell -Command "$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateShortcut('%USERPROFILE%\Desktop\UCX Browser.lnk'); $s.TargetPath = '%~dp0chrome.exe'; $s.WorkingDirectory = '%~dp0'; $s.Description = 'UCX Browser - Privacy-First Chromium'; $s.IconLocation = '%~dp0ucx.ico'; $s.Save()"
+          echo.
+          echo    [OK] Shortcut created on Desktop!
+          set /p RUN="    Launch now? (Y/N): "
+          if /i "%RUN%"=="Y" start "" "%USERPROFILE%\Desktop\UCX Browser.lnk"
+          goto end
+          
+          :startmenu
+          echo.
+          echo    [INFO] Creating Start Menu shortcut...
+          powershell -Command "$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateShortcut('%APPDATA%\Microsoft\Windows\Start Menu\Programs\UCX Browser.lnk'); $s.TargetPath = '%~dp0chrome.exe'; $s.WorkingDirectory = '%~dp0'; $s.Description = 'UCX Browser - Privacy-First Chromium'; $s.IconLocation = '%~dp0ucx.ico'; $s.Save()"
+          echo.
+          echo    [OK] Shortcut created in Start Menu!
+          set /p RUN="    Launch now? (Y/N): "
+          if /i "%RUN%"=="Y" start "" "%APPDATA%\Microsoft\Windows\Start Menu\Programs\UCX Browser.lnk"
+          goto end
+          
+          :current
+          echo.
+          echo    [INFO] Creating shortcuts...
+          powershell -Command "$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateShortcut('%CD%\UCX Browser.lnk'); $s.TargetPath = '%~dp0chrome.exe'; $s.WorkingDirectory = '%~dp0'; $s.Description = 'UCX Browser - Privacy-First Chromium'; $s.IconLocation = '%~dp0ucx.ico'; $s.Save()"
+          echo.
+          echo    [OK] Shortcuts created!
+          set /p RUN="    Launch now? (Y/N): "
+          if /i "%RUN%"=="Y" start "" "%CD%\UCX Browser.lnk"
+          goto end
+          
+          :portable
+          echo.
+          echo    [INFO] Creating portable version...
+          powershell -Command "Expand-Archive -Path '%~dp0UCX-Browser-Windows-x64.zip' -DestinationPath '%CD%\UCX-Browser-Portable' -Force"
+          echo.
+          echo    [OK] Portable version created!
+          set /p RUN="    Launch portable? (Y/N): "
+          if /i "%RUN%"=="Y" start "" "%CD%\UCX-Browser-Portable\chrome.exe"
+          goto end
+          
+          :runnow
+          echo.
+          echo    [INFO] Launching UCX Browser...
+          start "" "%~dp0chrome.exe"
+          goto end
+          
+          :quit
+          exit
+          
+          :end
+          echo.
+          echo  ==================================================================
+          echo.
+          echo    Thank you for choosing UCX Browser!
+          echo    Privacy First. No Compromise.
+          echo.
+          pause
+          
+          ==================================================================
+          '@ | Out-File -FilePath "chromium\Setup.bat" -Encoding ASCII -NoNewline
+          
+          # Create README
+          @"
+          ==================================================================
+              UCX Browser v3.0.0
+              Privacy-First Chromium
+              Copyright 2024-2026 UCX Project
+          ==================================================================
+          
+          ## Quick Start
+          
+          1. Run UCX-Browser.exe (recommended)
+          2. Or run Setup.bat for full installation with shortcuts
+          3. Chrome.exe can be run directly as well
+          
+          ## Features
+          
+          - Default search: SearXNG (searxng.website)
+          - All telemetry removed
+          - WebRTC protected
+          - HTTPS-only enforced
+          - DNS-over-HTTPS enabled
+          - Third-party cookies blocked
+          
+          ## Privacy Features
+          
+          - QUIC disabled (anti-fingerprinting)
+          - Client hints disabled
+          - Privacy sandbox disabled
+          - Do Not Track enabled
+          - Strict referrer policy
+          
+          ## Files Included
+          
+          - UCX-Browser.exe      - Main launcher (VBScript)
+          - UCX-Browser.vbs      - VBScript launcher
+          - UCX-Browser-Portable.exe - Portable mode
+          - Setup.bat            - Full installer with UCX icon shortcuts
+          - UCX-INFO.txt        - Privacy manifest
+          - ucx.ico             - UCX icon (256x256)
+          - ucx_logo.svg        - UCX logo
+          - default_preferences.json - Privacy settings
+          
+          ## Windows SmartScreen Note
+          
+          Windows Defender SmartScreen may show "Unknown Publisher" 
+          for the first few runs. This is normal for unsigned 
+          executables downloaded from the internet.
+          
+          Click "More info" then "Run anyway" to proceed.
+          
+          The actual browser (chrome.exe) is from Ungoogled Chromium.
+          
+          ## Based On
+          
+          Ungoogled Chromium 149.0.7827.200
+          
+          ==================================================================
+          
+          Privacy First. No Compromise.
+          www.github.com/KGECMD/UCX-Browser
+          ==================================================================
           "@ | Out-File -FilePath "chromium\README.txt" -Encoding UTF8
           Write-Host "Installer created"
       
       - name: Package
         run: |
           mkdir dist -Force
-          Compress-Archive -Path "chromium\*" -DestinationPath "dist\UCX-Browser-v2.0.1-Windows-x64.zip" -Force
-          Write-Host "Package created: $([math]::Round((Get-Item 'dist\UCX-Browser-v2.0.1-Windows-x64.zip').Length / 1MB, 2)) MB"
+          Compress-Archive -Path "chromium\*" -DestinationPath "dist\UCX-Browser-v3.0.0-Windows-x64.zip" -Force
+          $size = [math]::Round((Get-Item 'dist\UCX-Browser-v3.0.0-Windows-x64.zip').Length / 1MB, 2)
+          Write-Host "Package created: $size MB"
       
       - name: Upload
         uses: actions/upload-artifact@v4
@@ -204,7 +351,7 @@ jobs:
         with:
           files: artifact/*
           body: |
-            # 🛡️ UCX Browser v2.0.1
+            # 🛡️ UCX Browser v3.0.0
             
             **Privacy-First Chromium Browser**
             
@@ -217,24 +364,49 @@ jobs:
             - ✅ DNS-over-HTTPS enabled
             - ✅ Do Not Track enabled
             - ✅ Privacy sandbox disabled
+            - ✅ QUIC disabled (anti-fingerprinting)
+            - ✅ Client hints disabled
+            
+            ## 🛡️ Security Hardening
+            - ✅ Site isolation: Maximum
+            - ✅ Origin isolation: Enabled
+            - ✅ Storage partitioning: Enabled
+            - ✅ Sandbox: Maximum
             
             ## 📦 Included Files
-            - **UCX-Browser.exe** - Main launcher with UCX branding
+            - **UCX-Browser.exe** - Main launcher (VBScript-based)
+            - **UCX-Browser.vbs** - VBScript launcher with icon
             - **UCX-Browser-Portable.exe** - Portable mode
-            - **Setup.bat** - Interactive installer
+            - **Setup.bat** - Enhanced installer with UCX icon shortcuts
             - **README.txt** - Quick start guide
             - **UCX-INFO.txt** - Privacy manifest
-            - **ucx.ico** - Custom UCX icon
+            - **ucx.ico** - Custom UCX icon (256x256)
+            - **ucx_logo.svg** - UCX logo
             - **default_preferences.json** - Privacy settings
             
             ## 🚀 Quick Start
             1. Extract ZIP
-            2. Run UCX-Browser.exe
-            3. Enjoy private browsing!
+            2. Run **UCX-Browser.exe** (launcher)
+            3. Or run **Setup.bat** for installation with UCX icon shortcuts
             
-            ## Based On
-            Ungoogled Chromium 149.0.7827.200
+            ## ⚠️ Windows Defender/SmartScreen
+            Windows Defender SmartScreen may show "Unknown Publisher" for 
+            the first few runs. This is normal for unsigned executables.
+            Click "More info" then "Run anyway" to proceed.
             
+            The EXE is a VBScript launcher - SmartScreen may flag it as
+            less common file type. The actual browser (chrome.exe) is 
+            from Ungoogled Chromium which is well-known.
+            
+            ## 📜 Based On
+            - **Ungoogled Chromium 149.0.7827.200**
+            - **Chromium 149**
+            
+            ## 🔗 Resources
+            - Website: https://github.com/KGECMD/UCX-Browser
+            - Issues: https://github.com/KGECMD/UCX-Browser/issues
+            
+            ---
             *Privacy First. No Compromise.*
           prerelease: false
         env:

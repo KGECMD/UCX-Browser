@@ -28,7 +28,7 @@ jobs:
           
           # Create UCX Info
           cat > UCX-Browser.app/Contents/UCX-INFO.txt << 'EOF'
-          UCX Browser v2.0.1
+          UCX Browser v3.0.0
           Privacy-First Chromium
           
           Privacy Features:
@@ -67,7 +67,7 @@ jobs:
           
           # Create README
           cat > UCX-Browser.app/Contents/MacOS/README.txt << 'README'
-          UCX Browser v2.0.1 - README
+          UCX Browser v3.0.0 - README
           
           Quick Start:
           1. Run ./UCX-Browser to start
@@ -94,9 +94,9 @@ jobs:
         run: |
           mkdir -p dist
           if [ -f "ucx.dmg" ]; then
-            hdiutil create -volname "UCX Browser" -srcfolder UCX-Browser.app -ov -format UDZO dist/UCX-Browser-v2.0.1-macOS.dmg
+            hdiutil create -volname "UCX Browser" -srcfolder UCX-Browser.app -ov -format UDZO dist/UCX-Browser-v3.0.0-macOS.dmg
           else
-            tar -czf dist/UCX-Browser-v2.0.1-macOS.tar.gz UCX-Browser.app
+            tar -czf dist/UCX-Browser-v3.0.0-macOS.tar.gz UCX-Browser.app
           fi
           echo "Package created"
       
@@ -124,7 +124,7 @@ jobs:
         with:
           files: artifact/*
           body: |
-            # 🛡️ UCX Browser v2.0.1 - macOS
+            # 🛡️ UCX Browser v3.0.0 - macOS
             
             **Privacy-First Chromium Browser**
             
